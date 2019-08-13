@@ -7,6 +7,3 @@ Most course-related information will be in this repository, with the exception o
 * Syllabus 
 * Student grades and related feedback 
 * Place to turn in poster project 
-
-Here is the schedule for the semester (also on the syllabus in Coursera):
-
