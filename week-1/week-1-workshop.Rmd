@@ -1,0 +1,255 @@
+---
+title: "Week 1 workshop code"
+output: html_document
+--- 
+
+```{r}
+####################################
+# Project name: 
+# Project purpose: 
+# Code author name: 
+# Date last edited: 
+# Location of data used: 
+####################################
+```
+
+## Importing a data set into R 
+
+Make sure this file and the data file are saved in the same folder before you begin. If they are not, you will need to change the file location of the data file for data importing.
+
+```{r}
+# read the GSS 2016 data 
+gss.2016 <- read.csv(file = "legal_weed_age_GSS2016_ch1.csv")
+```
+
+## Examine the contents of the data file 
+
+```{r}
+# examine the contents of the file
+summary(object = gss.2016)
+```
+
+## Another way to import csv data 
+
+```{r}
+# open the data.table package 
+library(package = "data.table")
+```
+
+## Using fread to import data
+
+```{r}
+# open the GSS data with fread
+gss.2016 <- fread(input = "legal_weed_age_GSS2016_ch1.csv")
+```
+
+## Try the summary function again to see if it looks better 
+
+```{r}
+# examine the contents of the file
+summary(object = gss.2016)
+```
+
+## Check data types using the class function 
+
+```{r}
+# what data type is grass variable
+class(x = gss.2016$grass)
+
+# what data type is age variable
+class(x = gss.2016$age)
+```
+
+## Fixing the data types 
+
+```{r}
+# open the tidyverse 
+library(package = "tidyverse")
+```
+
+## Our first data cleaning task! 
+
+```{r}
+# change the data types for grass and age 
+gss.2016.clean <- gss.2016 %>% 
+    mutate(grass = as.factor(grass)) %>%
+    mutate(age = as.numeric(age))
+```
+
+## Checking our work 
+
+```{r}
+# check the types
+class(x = gss.2016.clean$grass)
+class(x = gss.2016.clean$age)
+
+# use summary to check the new data 
+summary(object = gss.2016.clean)
+```
+
+## Coding missing values 
+
+```{r}
+# recode don't know and inapplicable to NA
+gss.2016.clean <- gss.2016 %>% 
+    mutate(grass = as.factor(grass)) %>%
+    mutate(age = as.numeric(age)) %>% 
+    mutate(grass = na_if(x = grass, y = "DK")) %>% 
+    mutate(grass = na_if(x = grass, y = "IAP"))
+
+```
+
+## Check our work 
+
+```{r}
+# check for NA
+summary(object = gss.2016.clean)
+```
+
+## Get rid of unused categories of a factor 
+
+```{r}
+# recode don't know and inapplicable to NA
+gss.2016.clean <- gss.2016 %>% 
+    mutate(grass = as.factor(grass)) %>%
+    mutate(age = as.numeric(age)) %>% 
+    mutate(grass = na_if(x = grass, y = "DK")) %>% 
+    mutate(grass = na_if(x = grass, y = "IAP")) %>% 
+    mutate(grass = droplevels(x = grass))
+
+```
+
+## Check our work 
+
+```{r}
+# check for dropped levels
+summary(object = gss.2016.clean)
+```
+
+## Let's recode age to be categorical!
+
+```{r}
+# recode don't know and inapplicable to NA
+gss.2016.clean <- gss.2016 %>% 
+    mutate(grass = as.factor(grass)) %>%
+    mutate(age = as.numeric(age)) %>% 
+    mutate(grass = na_if(x = grass, y = "DK")) %>% 
+    mutate(grass = na_if(x = grass, y = "IAP")) %>% 
+    mutate(grass = droplevels(x = grass)) %>%
+    mutate(age.cat = cut(x = age,
+                         breaks = c(18, 29, 59, 74, 88),
+                         labels = c("18 - 29", "30 - 59", "60 - 74", "75+")))
+
+```
+
+## Let's rename the legalization categories
+
+```{r}
+# recode don't know and inapplicable to NA
+gss.2016.clean <- gss.2016 %>% 
+    mutate(grass = as.factor(grass)) %>%
+    mutate(age = as.numeric(age)) %>% 
+    mutate(grass = na_if(x = grass, y = "DK")) %>% 
+    mutate(grass = na_if(x = grass, y = "IAP")) %>% 
+    mutate(grass = droplevels(x = grass)) %>% 
+    mutate(grass = recode_factor(grass, 
+                          `LEGAL` = "Yes",
+                          `NOT LEGAL` = "No")) %>%
+    mutate(age.cat = cut(x = age,
+                         breaks = c(18, 29, 59, 74, 88),
+                         labels = c("18 - 29", "30 - 59", "60 - 74", "75+")))
+
+```
+
+## Check our work 
+
+```{r}
+# check for age.cat variable 
+summary(object = gss.2016.clean)
+```
+
+## Let's make a graph! 
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    ggplot(aes(x = grass)) +
+    geom_bar()
+```
+
+## Let's get rid of the NA in the graph
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    ggplot(aes(x = grass)) +
+    geom_bar()
+```
+
+## Let's add some color
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    ggplot(aes(x = grass, fill = grass)) +
+    geom_bar()
+```
+
+## How about green instead? ...and we do not need the legend
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    ggplot(aes(x = grass, fill = grass)) + 
+    geom_bar() +
+    scale_fill_manual(values = c("#78A678", "#7463AC"), 
+                    guide = FALSE)
+```
+
+## Let's add better labels to the axes 
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    ggplot(aes(x = grass, fill = grass)) + 
+    geom_bar() +
+    scale_fill_manual(values = c("#78A678", "#7463AC"), 
+                    guide = FALSE) +
+    labs(x = "Should marijuana be legal?",
+         y = "Number of responses")
+```
+
+## Get rid of the gray background 
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    ggplot(aes(x = grass, fill = grass)) + 
+    geom_bar() +
+    scale_fill_manual(values = c("#78A678", "#7463AC"), 
+                    guide = FALSE) +
+    labs(x = "Should marijuana be legal?",
+         y = "Number of responses") +
+    theme_minimal()
+```
+
+## Add age to the graph
+
+```{r}
+# graph support for legalization 
+gss.2016.clean %>%
+    drop_na(grass) %>%
+    drop_na(age.cat) %>%
+    ggplot(aes(x = age.cat, fill = grass)) + 
+    geom_bar(position = "dodge") +
+    scale_fill_manual(values = c("#78A678", "#7463AC"), 
+                    guide = FALSE) +
+    labs(x = "Should marijuana be legal?",
+         y = "Number of responses") +
+    theme_minimal()
+```
