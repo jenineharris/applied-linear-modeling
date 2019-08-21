@@ -15,3 +15,4 @@ Most course-related files will be in this repository, with the exception of the 
 * Syllabus 
 * Student grades and related feedback 
 * Place to turn in poster project 
+* Place to turn in go-to-a-thing reflection
