@@ -1,0 +1,82 @@
+ ---
+title: 'ALM Fall 2019: Exercise 1'
+output: html_document
+---
+
+# Purpose 
+
+Exercise 1 will provide practice using R to import data and conduct common data management tasks. 
+
+**Before you begin, save this file and the data file in the same folder on your computer.** 
+
+## Exercises 
+
+Use the National Health and Nutrition Examination Survey (NHANES) data to examine marijuana use in the U.S. Spend a few minutes looking through the NHANES website before you begin. While you are looking at the NHANES website, find the online codebook for the 2013-2014 data. Complete the following tasks to explore whether age is related marijuana use in the US. 
+
+(1) Complete a prolog
+
+```{r}
+####################################
+# Project name: 
+# Project purpose: 
+# Code author name: 
+# Date last edited: 
+# Location of data used: 
+####################################
+```
+
+(2) Import and summarize the 2013-2014 NHANES data file, `nhanes_2013_ch1.csv`
+
+```{r}
+
+```
+
+(3) Examine the data types for `DUQ200`, `RIDAGEYR`, `RIAGENDR` and fix data types if needed based on the online NHANES codebook 
+
+```{r}
+```
+
+(4) Based on the online NHANES codebook, code categories appropriately for `DUQ200`, `RIDAGEYR`, `RIAGENDR`. Rename the variables so they are easier to work with and understand. 
+
+
+```{r}
+```
+
+(5) Create a bar graph showing the number of NHANES participants answering yes and no to marijuana use 
+
+```{r}
+
+```
+
+(6) Recode age into a new variable called `age.cat` with 4 categories: 18-29, 30-39, 40-49, 50-59
+
+
+```{r}
+
+```
+
+(7) Create a grouped bar graph of marijuana use by age group
+
+```{r}
+
+```
+
+(8) Describe what you found and make a prediction about what will happen to marijuana use in the next 10 years. Use your results to support your prediction.
+
+## Want more? Try this optional extra **hacker** exercise (optional)
+
+(H) Create a bar graph of marijuana use by age group *and* sex; interpret your results 
+
+```{r}
+
+```
+
+## Check your work 
+
+Click the "Knit" button at the top of the file window to make sure that your code works. If it doesn't run successfully, check the error messages and try to fix it. If it does run, check the file generated to make sure you see what you expect to see. If you don't, go back and try to fix your code. 
+
+## Yay! You finished Exercise 1!
+
+Be prepared to discuss your work and results in class. 
+
+
