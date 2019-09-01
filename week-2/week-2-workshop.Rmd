@@ -1,0 +1,220 @@
+---
+title: "week-2-workshop"
+output: html_document
+---
+
+## Import and review the data for today
+
+* Note that the file extension should be **.csv** for this code to work
+
+```{r}
+# import the data using read.csv
+nhanes.2012 <- read.csv(file = "nhanes_2011_2012_ch3.csv")
+
+# examine the data set 
+summary(object = nhanes.2012)
+```
+
+## Data management topic: selecting cases and variables 
+
+```{r}
+# open the tidyverse for data management
+library(package = "tidyverse")
+
+# make a smaller data frame with four variables 
+nhanes.2012.cleaned <- nhanes.2012 %>%
+    select(AUQ300, AUQ310, RIAGENDR, RIDAGEYR)
+
+# check the new data frame 
+summary(object = nhanes.2012.cleaned)
+```
+
+## Data management topic: selecting cases and variables 
+
+```{r}
+# add code to keep values of AUQ300 that are Yes and No
+nhanes.2012.cleaned <- nhanes.2012 %>%
+    select(AUQ300, AUQ310, RIAGENDR, RIDAGEYR) %>%
+    filter(AUQ300 <= 2)
+
+# check the new data frame 
+summary(object = nhanes.2012.cleaned)
+```
+
+## Data cleaning: Fix data types and add labels 
+
+```{r}
+# add to the smaller data frame with four variables 
+# to keep values of AUQ300 that are Yes and No
+nhanes.2012.cleaned <- nhanes.2012 %>%
+    select(AUQ300, AUQ310, RIAGENDR, RIDAGEYR) %>%
+    filter(AUQ300 <= 2) %>%
+    mutate(AUQ300 = recode_factor(.x = AUQ300,
+                                `1` = 'Yes',
+                                `2` = 'No')) %>%
+    mutate(AUQ310 = recode_factor(.x = AUQ310,
+                                `1` = "1 to less than 100",
+                                `2` = "100 to less than 1000",
+                                `3` = "1000 to less than 10k",
+                                `4` = "10k to less than 50k",
+                                `5` = "50k or more",
+                                `7` = "Don't know",
+                                `9` = "Refused")) %>%
+    mutate(RIAGENDR = recode_factor(.x = RIAGENDR,
+                                  `1` = 'Male',
+                                  `2` = 'Female')) %>%
+    rename(gun.use = AUQ300) %>%
+    rename(rounds.fired = AUQ310) %>%
+    rename(sex = RIAGENDR) %>%
+    rename(age = RIDAGEYR) 
+
+
+# check the recoding
+summary(object = nhanes.2012.cleaned)
+
+```
+
+## Choosing mean or median
+
+```{r}
+# examine age distribution  
+nhanes.2012.cleaned %>%
+    ggplot(aes(x = age)) + 
+    geom_histogram()
+```
+
+## Find the mean, median, std dev, IQR in tidyverse 
+
+```{r}
+# descriptive statistics for continuous variables
+nhanes.2012.cleaned %>%
+    drop_na(age) %>%
+    summarize(mean.age = mean(x = age),
+              sd.age = sd(x = age),
+              med.age = median(x = age),
+              iqr.age = IQR(x = age))
+```
+
+## Find frequencies and percentages in base R
+
+```{r}
+# descriptive statistics for categorical variables 
+table(nhanes.2012.cleaned$gun.use) 
+prop.table(x = table(nhanes.2012.cleaned$gun.use))
+```
+
+## Find frequencies and percentages in tidyverse  
+
+```{r}
+# descriptive stats for categorical in tidyverse
+nhanes.2012.cleaned %>%
+  group_by(gun.use) %>%
+  summarize(freq.gun.use = n()) %>%
+  mutate(perc.gun.use = 100*(freq.gun.use / sum(freq.gun.use)))
+```
+
+## Using tableone to get all the descriptive stats
+
+```{r}
+# open tableone package
+library(package = "tableone")
+```
+
+```{r}
+# create and print table 
+gun.use.table <- CreateTableOne(data = nhanes.2012.cleaned)
+print(x = gun.use.table)
+```
+
+## Update the table with median instead of mean
+
+```{r}
+# create table 
+gun.use.table <- CreateTableOne(data = nhanes.2012.cleaned)
+
+# show all levels for categorical 
+# specify non-normal age variable
+print(x = gun.use.table, 
+      showAllLevels = TRUE,
+      nonnormal = 'age')
+```
+
+## Step 2: Chi-squared test statistic 
+
+```{r}
+# compute test statistic with CrossTable
+chisq.test(x = nhanes.2012.cleaned$sex,
+           y = nhanes.2012.cleaned$gun.use)
+```
+
+
+## Ok, but what is the relationship? 
+
+```{r}
+# gun use by sex percentages
+prop.table(x = table(nhanes.2012.cleaned$sex,
+                     nhanes.2012.cleaned$gun.use),
+           margin = 1)
+```
+
+## Ok, but what is the relationship? (graph)
+
+```{r}
+# gun use by sex
+nhanes.2012.cleaned %>%
+    ggplot(aes(x = sex, fill = gun.use)) + 
+    geom_bar(position = "dodge")
+```
+
+## Step 2: Calculate the test statistic
+
+```{r}
+# select the gun users from the clean data
+nhanes.2012.gun.users <- nhanes.2012.cleaned %>%
+    filter(gun.use == "Yes")
+
+# conduct the t-test
+t.test(x = nhanes.2012.gun.users$age, mu = 43.7)
+
+```
+
+## Step 2: Calculate the test statistic 
+
+```{r}
+# conduct the ANOVA
+oneway.test(formula = age ~ rounds.fired,
+            data = nhanes.2012.gun.users,
+            var.equal = TRUE)
+```
+
+## Add some context 
+
+```{r}
+# means by group 
+nhanes.2012.gun.users %>% 
+    drop_na(age) %>% 
+    drop_na(rounds.fired) %>%
+    group_by(rounds.fired) %>%
+    summarize(mean.age = mean(age),
+              sd.age = sd(age))
+```
+
+## Add some context 
+
+```{r}
+# make a fancy graph
+nhanes.2012.gun.users %>%
+  drop_na(age) %>% 
+  drop_na(rounds.fired) %>%
+  ggplot(aes(y = age, x = rounds.fired)) + 
+  geom_jitter(aes(color = rounds.fired), alpha = .6) +
+  geom_boxplot(aes(fill = rounds.fired), alpha = .4) + 
+  scale_fill_brewer(palette = "Spectral", guide = FALSE) +
+  scale_color_brewer(palette = "Spectral", guide = FALSE) +
+  theme_minimal() + 
+  coord_flip() +
+  labs(x = "Number of rounds fires", y = "Age in years")
+```
+
+
+

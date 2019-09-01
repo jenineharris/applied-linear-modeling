@@ -1,0 +1,92 @@
+---
+title: 'ALM Fall 2019: Exercise 2'
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to provide practice using R and interpreting results for data management, descriptive statistics, and three common bivariate inferential statistical tests.  
+
+## Exercises 
+
+Follow the steps below to use the BRFSS data in the **transgender_hc_ch2.csv** file to clean the data, create a table of appropriate descriptive statistics, and conduct a few bivariate analyses. Spend a few minutes looking through the BRFSS website before beginning and find the codebooks. 
+
+(1) Complete a prolog
+
+```{r}
+####################################
+# Project name: 
+# Project purpose: 
+# Code author name: 
+# Date last edited: 
+# Location of data used: 
+####################################
+```
+
+(2) Import and summarize the `transgender_hc_ch2.csv` 2014 BRFSS data file
+
+```{r}
+
+```
+
+(3) Select participants who are transgender and select the following variables: `TRNSGNDR`, `X_AGE80`, `PHYSHLTH`, `HLTHPLN1`
+
+```{r}
+
+```
+
+(4) Based on the BRFSS codebook, recode missing values and add category labels appropriately for all variables in your small data frame
+
+```{r}
+
+```
+
+(5) Check data types and change any that need to be changed; many R commands do not work with integers, so change integers to numeric 
+
+
+```{r}
+
+```
+
+(7) Use `tableone` to develop a table of appropriate descriptive statistics including all variables in the small data set 
+
+```{r}
+
+```
+
+(8) Conduct the appropriate statistical test to determine if there is an association between transgender status (`TRNSGNDR`) and insurance status (`HLTHPLN1`), interpret your results 
+
+```{r}
+
+```
+
+
+(9) Conduct the appropriate statistical test to compare the age of BRFSS participants to a hypothesized age of 50 years old, interpret your results 
+
+```{r}
+
+
+```
+
+
+(10) Conduct the appropriate statistical test to determine if the age of BRFSS participants is the same across transgender status groups, interpret your results  
+
+```{r}
+
+```
+
+## Want more? Try the hacker questions (optional)
+
+(H1) Find the mean or median value of PHYSHLTH (whichever is most appropriate) and recode to create a new factor variable with values above the mean or median as “poor physical health” and values below the mean as “good physical health”
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
