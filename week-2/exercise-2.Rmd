@@ -9,7 +9,7 @@ These exercises are designed to provide practice using R and interpreting result
 
 ## Exercises 
 
-Follow the steps below to use the BRFSS data in the **transgender_hc_ch2.csv** file to clean the data, create a table of appropriate descriptive statistics, and conduct a few bivariate analyses. Spend a few minutes looking through the BRFSS website before beginning and find the codebooks. 
+Follow the steps below to clean the data in the **transgender_hc_ch2.csv** file, create a table of appropriate descriptive statistics, and conduct a few bivariate analyses. The data are from the 2014 Behavioral Risk Factor Surveillance Survey (BRFSS). Before you start working with the data, spend a few minutes looking through the BRFSS website to find and review the 2014 codebook. 
 
 (1) Complete a prolog
 
@@ -77,7 +77,7 @@ Follow the steps below to use the BRFSS data in the **transgender_hc_ch2.csv** f
 
 ## Want more? Try the hacker questions (optional)
 
-(H1) Find the mean or median value of PHYSHLTH (whichever is most appropriate) and recode to create a new factor variable with values above the mean or median as “poor physical health” and values below the mean as “good physical health”
+(H1) Find the mean or median value of PHYSHLTH (whichever is most appropriate) and recode to create a new factor variable with values above the mean or median as "poor physical health" and values below the mean as "good physical health"�
 
 ```{r}
 
