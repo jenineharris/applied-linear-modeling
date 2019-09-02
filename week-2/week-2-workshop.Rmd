@@ -121,19 +121,21 @@ library(package = "tableone")
 ```
 
 ```{r}
-# create and print table 
+# create table of all variables
 gun.use.table <- CreateTableOne(data = nhanes.2012.cleaned)
+
+# print the table with all variables
 print(x = gun.use.table)
 ```
 
 ## Update the table with median instead of mean
 
 ```{r}
-# create table 
+# create table of all variables
 gun.use.table <- CreateTableOne(data = nhanes.2012.cleaned)
 
-# show all levels for categorical 
-# specify non-normal age variable
+# print showing all levels for categorical 
+# and stats for non-normal age variable
 print(x = gun.use.table, 
       showAllLevels = TRUE,
       nonnormal = 'age')
@@ -142,7 +144,7 @@ print(x = gun.use.table,
 ## Step 2: Chi-squared test statistic 
 
 ```{r}
-# compute test statistic with CrossTable
+# does gun use vary by sex
 chisq.test(x = nhanes.2012.cleaned$sex,
            y = nhanes.2012.cleaned$gun.use)
 ```
@@ -173,7 +175,7 @@ nhanes.2012.cleaned %>%
 nhanes.2012.gun.users <- nhanes.2012.cleaned %>%
     filter(gun.use == "Yes")
 
-# conduct the t-test
+# compare mean age of gun users to everyone
 t.test(x = nhanes.2012.gun.users$age, mu = 43.7)
 
 ```
@@ -181,7 +183,7 @@ t.test(x = nhanes.2012.gun.users$age, mu = 43.7)
 ## Step 2: Calculate the test statistic 
 
 ```{r}
-# conduct the ANOVA
+# ANOVA mean age by rounds fired group
 oneway.test(formula = age ~ rounds.fired,
             data = nhanes.2012.gun.users,
             var.equal = TRUE)
@@ -190,7 +192,7 @@ oneway.test(formula = age ~ rounds.fired,
 ## Add some context 
 
 ```{r}
-# means by group 
+# mean of age by rounds fired groups
 nhanes.2012.gun.users %>% 
     drop_na(age) %>% 
     drop_na(rounds.fired) %>%
@@ -202,7 +204,7 @@ nhanes.2012.gun.users %>%
 ## Add some context 
 
 ```{r}
-# make a fancy graph
+# graph mean ages by rounds fired groups
 nhanes.2012.gun.users %>%
   drop_na(age) %>% 
   drop_na(rounds.fired) %>%
