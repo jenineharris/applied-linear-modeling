@@ -1,0 +1,150 @@
+---
+title: 'ALM Fall 2019: Exercise 1'
+output: html_document
+---
+
+# Instructions 
+
+The purpose of this assignment is to start getting used to R and to practice importing data and conducting a few common data management tasks. 
+
+## Exercises 
+
+### Part I:
+
+Use the National Health and Nutrition Examination Survey (NHANES) data to examine marijuana use in the U.S. Spend a few minutes looking through the NHANES website before you begin. While you are looking at the NHANES website, find the online codebook for the 2013-2014 data. Complete the following tasks to explore whether age is related marijuana use in the US. 
+
+(1) Complete a prolog
+
+```{r}
+####################################
+# Project name: Exercise 1
+# Project purpose: Practice data management
+# Code author name: Jenine Harris 
+# Date last edited: 8-13-2019
+# Location of data used: C:\Users\jenine\Box\teaching\Teaching\Fall2019\exercise-1\
+####################################
+```
+
+(2) Open and summarize the 2013-2014 NHANES data file saved as `nhanes_2013_ch1.csv`
+
+```{r}
+# import NHANES file with csv format
+nhanes <- read.csv(file = "nhanes_2013_ch1.csv")
+
+# summarize the imported data 
+summary(object = nhanes)
+```
+
+(3) Examine the data types for `DUQ200`, `RIDAGEYR`, `RIAGENDR` and fix data types if needed based on the online NHANES codebook 
+
+```{r} 
+# open the tidyverse
+library(package = "tidyverse")
+
+# examine data types
+class(x = nhanes$DUQ200) 
+class(x = nhanes$RIDAGEYR)
+class(x = nhanes$RIAGENDR)
+
+# fix data types 
+nhanes.clean <- nhanes %>%
+  mutate(DUQ200 = as.factor(x = DUQ200)) %>%
+  mutate(RIAGENDR = as.factor(x = RIAGENDR)) %>%
+  mutate(RIDAGEYR = as.numeric(x = RIDAGEYR))
+```
+
+(4) Based on the online NHANES codebook, code categories appropriately for `DUQ200`, `RIDAGEYR`, `RIAGENDR`. Rename the variables so they are easier to work with and understand. 
+
+
+```{r}
+# data management
+nhanes.clean <- nhanes %>%
+  mutate(DUQ200 = as.factor(x = DUQ200)) %>%
+  mutate(RIAGENDR = as.factor(x = RIAGENDR)) %>% 
+  rename(sex = RIAGENDR) %>%
+  rename(potUse = DUQ200) %>%
+  rename(ageYears = RIDAGEYR) %>%
+  mutate(potUse = recode(.x = potUse,
+                         `1` = "yes",
+                         `2` = "no",
+                         `7` = NA_character_,
+                         `9` = NA_character_)) %>% 
+  mutate(sex = recode(.x = sex,
+                      `1` = "male",
+                      `2` = "female"))
+```
+
+(5) Create a bar graph showing the number of NHANES participants answering yes and no to marijuana use 
+
+```{r}
+# bar graph 
+nhanes.clean %>% 
+  drop_na(potUse) %>%
+  ggplot(aes(x = potUse)) +
+  geom_bar()
+
+```
+
+(6) Recode age into a new variable called `age.cat` with 4 categories: 18-29, 30-39, 40-49, 50-59
+
+
+```{r}
+# data management
+nhanes.clean <- nhanes %>%
+  mutate(DUQ200 = as.factor(x = DUQ200)) %>%
+  mutate(RIAGENDR = as.factor(x = RIAGENDR)) %>% 
+  rename(sex = RIAGENDR) %>%
+  rename(potUse = DUQ200) %>%
+  rename(ageYears = RIDAGEYR) %>%
+  mutate(potUse = recode(.x = potUse,
+                         `1` = "yes",
+                         `2` = "no",
+                         `7` = NA_character_,
+                         `9` = NA_character_)) %>% 
+  mutate(sex = recode(.x = sex,
+                      `1` = "male",
+                      `2` = "female")) %>%
+  mutate(ageCat = cut(x = ageYears,
+                      breaks = c(-Inf, 29, 39, 49, Inf),
+                      labels = c("18 - 29", "30 - 39", "40 - 49", "50 - 59")))
+
+# check the work
+summary(object = nhanes.clean)
+
+```
+
+(7) Create a grouped bar graph of marijuana use by age group
+
+```{r}
+# bar graph 
+nhanes.clean %>% 
+  drop_na(potUse) %>%
+  ggplot(aes(x = ageCat, fill = potUse)) +
+  geom_bar(position = "dodge")
+```
+
+(8) Describe what you found and make a prediction about what will happen to marijuana use in the next 10 years. Use your results to support your prediction.
+
+## Want more? Try this optional extra **hacker** exercise 
+
+(H) Create a bar graph of marijuana use by age group *and* sex; interpret your results 
+
+```{r}
+# bar graph 
+nhanes.clean %>% 
+  drop_na(potUse) %>%
+  ggplot(aes(x = ageCat, fill = potUse)) +
+  geom_bar(position = "dodge") +
+  facet_grid(~ sex)
+
+```
+
+## Check your work 
+
+Click the "Knit" button at the top of the file window to make sure that your code works. If it doesn't run successfully, check the error messages and try to fix it. If it does run, check the file generated to make sure you see what you expect to see. If you don't, go back and try to fix your code. 
+
+## Yay! You finished Exercise 1!
+
+Be prepared to discuss your work and results in class. 
+
+
