@@ -1,0 +1,235 @@
+---
+title: 'Week 3 Workshop'
+---
+
+## Importing and reviewing the data 
+
+```{r}
+# import the water data
+water.educ <- read.csv(file = "water_educ_2015_who_unesco_ch8.csv")
+
+# examine the data
+summary(object = water.educ)
+```
+
+## Codebook 
+
+* country: the name of the country 
+* med.age: the median age of the citizens in the country 
+* perc.1dollar: percentage of citizens living on $1 per day or less 
+* perc.basic2015sani: percentage of citizens with basic sanitation access 
+* perc.safe2015sani: percentage of citizens with safe sanitation access 
+* perc.basic2015water: percentage of citizens with basic water access 
+* perc.safe2015water: percentage of citizens with safe water access 
+* perc.in.school: percentage of school-age people in primary and secondary school  
+* female.in.school: percentage of female school-age people in primary and secondary school 
+* male.in.school: percentage of male school-age people in primary and secondary school 
+
+## Descriptive statistics 
+
+```{r}
+# open the tidyverse
+library(package = "tidyverse")
+
+# descriptive statistics for females in school and water access
+water.educ %>%
+  drop_na(female.in.school) %>%
+  drop_na(perc.basic2015water) %>%
+  summarize(m.f.educ = mean(x = female.in.school),
+            sd.f.educ = sd(x = female.in.school),
+            m.bas.water = mean(x = perc.basic2015water),
+            sd.bas.water = sd(x = perc.basic2015water))
+```
+
+## Visualize the relationship 
+
+```{r}
+# explore plot of female education and water access
+water.educ %>%
+  ggplot(aes(y = female.in.school, x = perc.basic2015water)) + 
+  geom_point(aes(color = "Country"), size = 2) + 
+  theme_minimal() + 
+  labs(y = "Percent of school-aged females in school",
+       x = "Percent with basic water access") +
+  scale_color_manual(values = "#7463AC", name = "") 
+```
+
+## Poverty and water access 
+
+```{r}
+# plot of poverty and water access
+water.educ %>% 
+  ggplot(aes(y = female.in.school, x = perc.1dollar)) + 
+  geom_point(aes(color = "Country"), size = 2) +
+  theme_minimal() + 
+  labs(x = "Percent with basic access to water",
+       y = "Percent living on less than $1 per day")+
+  scale_color_manual(values = "#7463AC", name = "") 
+```
+
+
+## Water access and female education in countries globally 
+
+```{r}
+# explore plot of female education and water
+water.educ %>%
+  ggplot(aes(y = female.in.school, x = perc.basic2015water)) + 
+  geom_smooth(method = "lm", se = FALSE, aes(linetype = "Fit line"), color = "gray60") +
+  geom_point(size = 2, aes(color = "Country")) + 
+  theme_minimal() + 
+  labs(y = "Percent of school-aged females in school",
+       x = "Percent with basic water access") +
+  scale_color_manual(values = "#7463AC", name = "") +
+  scale_linetype_manual(values = 1, name = "")
+
+```
+
+## Calculating Pearson's r correlation coefficient 
+
+```{r}
+# correlation between water access and female education
+water.educ %>%
+  summarize(cor.females.water = cor(x = perc.basic2015water,
+                                    y = female.in.school, 
+                                    use = "complete"))
+
+```
+
+## Water access and poverty in countries globally 
+
+```{r}
+# explore plot of poverty and water
+water.educ %>%
+  ggplot(aes(y = female.in.school, x = perc.1dollar)) + 
+  geom_smooth(method = "lm", se = FALSE, aes(linetype = "Linear fit line"), color = "gray60") +
+  geom_point(size = 2, aes(color = "Country")) + 
+  theme_minimal() + 
+  labs(x = "Percent living on < $1 per day",
+       y = "Percent of school-aged females in school") +
+  scale_color_manual(values = "#7463AC", name = "") +
+  scale_linetype_manual(values = 1, name = "")
+```
+
+## Compute correlation coefficient for poverty and water access 
+
+```{r}
+# correlations between water access, poverty, and female education
+water.educ %>%
+  summarize(cor.females.water = cor(x = perc.basic2015water,
+                                    y = female.in.school,
+                                    use = "complete"),
+            cor.poverty.water = cor(x = perc.1dollar,
+                                    y = female.in.school,
+                                    use = "complete"))
+
+```
+
+## You try it! Graph a relationship
+
+Copy and modify the code from above to graph the relationship between the `female.in.school` variable and basic sanitation measured by the `perc.basic2015sani` variable.
+
+```{r}
+# relationship between female in school and sanitation
+```
+
+## You try it! Compute a correlation
+
+Add the correlation between `female.in.school` and `perc.basic2015sani` to the existing code:
+
+```{r}
+# correlations between water access, poverty, and female education
+water.educ %>%
+  summarize(cor.females.water = cor(x = perc.basic2015water,
+                                    y = female.in.school,
+                                    use = "complete"),
+            cor.poverty.water = cor(x = perc.1dollar,
+                                    y = female.in.school,
+                                    use = "complete"))
+
+```
+
+## You try it! Interpret your results 
+
+
+
+
+## NHST Step 2: Computing the test statistic 
+
+```{r}
+# test for correlation coefficient
+cor.test(x = water.educ$perc.basic2015water, 
+         y = water.educ$female.in.school)
+```
+
+## Checking normality using a histogram
+
+```{r}
+# check normality of female.in.school variable
+water.educ %>%
+  drop_na(female.in.school) %>%
+  drop_na(perc.basic2015water) %>%
+  ggplot(aes(x = female.in.school)) + 
+  geom_histogram() + 
+  theme_minimal() + 
+  labs(x = "Percent of school-aged females in school",
+       y = "Number of countries") 
+```
+
+## Checking normality for the water access variable
+
+```{r warning = FALSE, echo = FALSE, message = FALSE}
+# check normality of water access variable
+water.educ %>%
+  drop_na(female.in.school) %>%
+  drop_na(perc.basic2015water) %>%
+  ggplot(aes(x = perc.basic2015water)) + 
+  geom_histogram() + 
+  theme_minimal() + 
+  labs(x = "Percent with basic water access",
+       y = "Number of countries") 
+```
+
+## Checking the linearity assumption 
+
+```{r warning = FALSE, message = FALSE, error = FALSE, echo = FALSE}
+# female education and water graph with linear fit line and Loess curve
+water.educ %>%
+  ggplot(aes(y = female.in.school, x = perc.basic2015water)) + 
+  geom_point(aes(size = "Country"), color = "#7463AC") + 
+  geom_smooth(aes(color = "Linear fit line"), method = "lm", se = FALSE) +
+  geom_smooth(aes(color = "Loess curve"), se = FALSE) +
+  theme_minimal() + 
+  labs(y = "Percent of school-aged females in school",
+       x = "Percent with basic access to water") +
+  scale_color_manual(values = c("gray60", "deeppink"), name= "") +
+  scale_size_manual(values = 2, name = "")
+```
+
+## Spearman's rho 
+
+```{r message=FALSE, warning=FALSE}
+# spearman correlation female education and water access
+spear.fem.water <- cor.test(x = water.educ$perc.basic2015water, 
+                            y = water.educ$female.in.school, 
+                            method = "spearman")
+spear.fem.water
+```
+
+## You try it! Test the correlation of sanitation with females in school
+
+Step 1: Write the null and alternate hypotheses:
+
+H0: There is no correlation between access to basic sanitation and percent of females in school. 
+
+HA: There is a correlation between access to basic sanitation and percent of females in school.
+
+```{r}
+
+```
+
+
+
+
+
+
+

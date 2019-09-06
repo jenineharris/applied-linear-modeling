@@ -1,0 +1,72 @@
+---
+title: "exercises-3"
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to solidify statistical concepts and provide practice using R and interpreting results for the correlation coefficient. 
+
+## Exercises 
+
+* Save this file and the `water_educ_2015_who_unesco_ch8.csv` data file 
+* If you have not already, read the Mukaka (2012) reading for this week
+
+(1) In one sentence, describe something you learned about correlation coefficients from the Mukaka (2012) article. If there was nothing new for you in the article, write the definition of correlation and what it is useful for. 
+
+(2) In a short paragraph or a set of bullet points, describe the difference between Pearson's r, Spearman's rho, Kendall's tau, and Biserial/point-biserial correlation as you understand it from the reading in Field. 
+
+(3) Import the data in the `water_educ_2015_who_unesco_ch8.csv` file 
+
+```{r}
+
+```
+
+(4) Make a table of descriptive statistics for all the variables in the data except for country. There are multiple ways to do this. You could take a subset of variables in a smaller data frame and make a table of them all, or you could read the help documentation for `CreateTableOne` to learn how to choose variables for a table with the `vars = ` argument. Be sure to use appropriate statistics for each variable. 
+
+```{r}
+
+```
+
+(4) Use a scatterplot to examine the relationship between `male.in.school` and `female.in.school` 
+
+```{r}
+
+```
+
+
+(5) Use a scatterplot to examine the relationship between `male.in.school` and `perc.basic2015water` 
+
+```{r}
+
+```
+
+(6) Based on the scatterplots from questions 4 and 5, make predictions about what you would find when you conduct Pearson correlation analyses for `male.in.school` and `female.in.school` and for `male.in.school` and `perc.basic2015water`.
+
+```{r}
+
+```
+
+(7) Conduct a Pearson’s r correlation analysis for each pair of variables. Interpret each r statistic in terms of direction, size, and significance. 
+
+```{r}
+
+```
+
+(8) Check assumptions for the Pearson’s r for each pair of variables. 
+
+```{r}
+
+```
+
+(9) If assumptions are not met for the Pearson’s r, conduct and interpret a Spearman’s correlation analysis including assumption checking. Interpret your results.
+
+```{r}
+
+```
+
+(10) Write a paragraph summarizing what you found in questions 3 through 9 
+
+
+
+
