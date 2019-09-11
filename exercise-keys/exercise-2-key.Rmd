@@ -1,0 +1,210 @@
+---
+title: 'ALM Fall 2019: Exercise 2 Key'
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to provide practice using R and interpreting results for data management, descriptive statistics, and three common bivariate inferential statistical tests.  
+
+## Exercises 
+
+Follow the steps below to use the BRFSS data in the **transgender_hc_ch2.csv** file to clean the data, create a table of appropriate descriptive statistics, and conduct a few bivariate analyses. Spend a few minutes looking through the BRFSS website before beginning and find the codebooks. 
+
+(1) Complete a prolog
+
+```{r}
+####################################
+# Project name: Exercise 2
+# Project purpose: Practice coding and bivariate review
+# Code author name: Jenine Harris
+# Date last edited: 9/6/2019
+# Location of data used: C:\Users\jenine\Box\teaching\Teaching\Fall2019\week-2-materials
+####################################
+```
+
+(2) Import and summarize the `transgender_hc_ch2.csv` 2014 BRFSS data file
+
+```{r}
+# import the data 
+transHC <- read.csv("transgender_hc_ch2.csv")
+
+# examine the data
+summary(object = transHC)
+```
+
+(3) Select participants who are transgender and select the following variables: `TRNSGNDR`, `X_AGE80`, `PHYSHLTH`, `HLTHPLN1`
+
+```{r}
+# open tidyverse
+library(package = "tidyverse")
+
+# select transgender and variables
+transHC.clean <- transHC %>%
+  filter(TRNSGNDR <= 3) %>%
+  select(TRNSGNDR, X_AGE80, PHYSHLTH, HLTHPLN1)
+
+# check the work
+summary(object = transHC.clean)
+```
+
+(4) Based on the BRFSS codebook, recode missing values and add category labels appropriately for all variables in your small data frame
+
+```{r}
+# select transgender and variables
+transHC.clean <- transHC %>%
+  filter(TRNSGNDR <= 3) %>%
+  select(TRNSGNDR, X_AGE80, PHYSHLTH, HLTHPLN1) %>%
+  mutate(HLTHPLN1 = recode_factor(.x = HLTHPLN1,
+                                  `1` = 'Yes',
+                                  `2` = 'No',
+                                  `7` = 'Don\'t know/not sure/missing',
+                                  `9` = 'Refused')) %>%
+  mutate(TRNSGNDR = recode_factor(.x = TRNSGNDR,
+                                  `1` = 'Male to female',
+                                  `2` = 'Female to male',
+                                  `3` = 'Gender non-conforming')) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 77)) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 99)) %>%
+  mutate(PHYSHLTH = recode(PHYSHLTH, `88` = 0L))
+
+         
+# check the work 
+summary(object = transHC.clean)
+```
+
+(5) Check data types and change any that need to be changed; many R commands do not work with integers, so change integers to numeric 
+
+
+```{r}
+# check data types
+class(x = transHC$X_AGE80)
+class(x = transHC$PHYSHLTH)
+
+# change data types to numeric
+transHC.clean <- transHC %>%
+  filter(TRNSGNDR <= 3) %>%
+  select(TRNSGNDR, X_AGE80, PHYSHLTH, HLTHPLN1) %>%
+  mutate(HLTHPLN1 = recode_factor(.x = HLTHPLN1,
+                                  `1` = 'Yes',
+                                  `2` = 'No',
+                                  `7` = 'Don\'t know/not sure/missing',
+                                  `9` = 'Refused')) %>%
+  mutate(TRNSGNDR = recode_factor(.x = TRNSGNDR,
+                                  `1` = 'Male to female',
+                                  `2` = 'Female to male',
+                                  `3` = 'Gender non-conforming')) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 77)) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 99)) %>%
+  mutate(PHYSHLTH = recode(PHYSHLTH, `88` = 0L)) %>%
+  mutate(PHYSHLTH = as.numeric(PHYSHLTH)) %>%
+  mutate(X_AGE80 = as.numeric(X_AGE80))
+
+# check data types
+class(x = transHC.clean$X_AGE80)
+class(x = transHC.clean$PHYSHLTH)
+
+
+```
+
+(7) Use `tableone` to develop a table of appropriate descriptive statistics including all variables in the small data set 
+
+```{r}
+# open tableone
+library(package = "tableone")
+
+# make and print table
+transHC.table <- CreateTableOne(data = transHC.clean)
+print(transHC.table)
+
+```
+
+(8) Conduct the appropriate statistical test to determine if there is an association between transgender status (`TRNSGNDR`) and insurance status (`HLTHPLN1`), interpret your results 
+
+```{r}
+# chi-squared 
+chisq.test(x = transHC.clean$TRNSGNDR,
+           y = transHC.clean$HLTHPLN1)
+
+```
+
+There is no statistically significant association between transgender status and health insurance status (chi-squared = 3.05; p = .80)
+
+(9) Conduct the appropriate statistical test to compare the age of BRFSS participants to a hypothesized age of 50 years old, interpret your results 
+
+```{r}
+# one-sample t-test
+t.test(x = transHC.clean$X_AGE80, mu = 50)
+```
+
+**The mean age in the sample was 53.6 years old. A one-sample t-test indicated that this was statistically significantly different from the hypothesized value of 50 years old (t = 5.6; p < .05).**
+
+(10) Conduct the appropriate statistical test to determine if the age of BRFSS participants is the same across transgender status groups, interpret your results  
+
+```{r}
+# ANOVA
+oneway.test(formula = X_AGE80 ~ TRNSGNDR,
+            data = transHC.clean,
+            var.equal = TRUE)
+```
+
+There is no statistically significant difference in mean age across groups of transgender status (F = 1.52; p = .22).
+
+```{r}
+# graph ages by transgender groups
+transHC.clean %>%
+  ggplot(aes(y = X_AGE80, x = TRNSGNDR)) + 
+  geom_jitter(aes(color = TRNSGNDR), alpha = .6) +
+  geom_boxplot(aes(fill = TRNSGNDR), alpha = .4) + 
+  scale_fill_brewer(palette = "Spectral", guide = FALSE) +
+  scale_color_brewer(palette = "Spectral", guide = FALSE) +
+  theme_minimal() + 
+  coord_flip() +
+  labs(x = "Transgender group", y = "Age in years")
+```
+
+
+## Want more? Try the hacker questions (optional)
+
+(H1) Find the mean or median value of PHYSHLTH (whichever is most appropriate) and recode to create a new factor variable with values above the mean or median as “poor physical health” and values below the mean as “good physical health”
+
+```{r}
+# check a histogram to see if normal
+transHC.clean %>%
+  ggplot(aes(x = PHYSHLTH)) +
+  geom_histogram()
+
+# not normally distributed use median
+transHC.clean <- transHC %>%
+  filter(TRNSGNDR <= 3) %>%
+  select(TRNSGNDR, X_AGE80, PHYSHLTH, HLTHPLN1) %>%
+  mutate(HLTHPLN1 = recode_factor(.x = HLTHPLN1,
+                                  `1` = 'Yes',
+                                  `2` = 'No',
+                                  `7` = 'Don\'t know/not sure/missing',
+                                  `9` = 'Refused')) %>%
+  mutate(TRNSGNDR = recode_factor(.x = TRNSGNDR,
+                                  `1` = 'Male to female',
+                                  `2` = 'Female to male',
+                                  `3` = 'Gender non-conforming')) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 77)) %>%
+  mutate(PHYSHLTH = na_if(PHYSHLTH, 99)) %>%
+  mutate(PHYSHLTH = recode(PHYSHLTH, `88` = 0L)) %>%
+  mutate(PHYSHLTH = as.numeric(PHYSHLTH)) %>%
+  mutate(X_AGE80 = as.numeric(X_AGE80)) %>% 
+  mutate(health = cut(PHYSHLTH,
+                      breaks = c(-Inf, median(PHYSHLTH, na.rm = TRUE), Inf),
+                      labels = c("good physical health", "poor physical health")))
+
+# look at data
+summary(object = transHC.clean)
+
+```
+
+
+
+
+
+
+
+
