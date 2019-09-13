@@ -1,0 +1,33 @@
+---
+title: "exercises-4"
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to practice conducting and interpreting a simple linear regression model. 
+
+## Exercises 
+
+* Save this file and the `dist_ssp_amfar_ch9.csv` data file 
+* If you have not already, read the readings for this week
+
+(1) **Use the readings for this week** to answer the following questions and identify (cite) which reading you found the answer in: 
+
+* what are hat-values?  
+
+* what is the coefficient of determination? 
+
+* what are the four steps in a regression analysis? 
+
+
+(2) Conduct a simple linear regression analysis with the outcome **distance to a syringe program** and the predictor **number of opioid prescriptions per 100 people**. Follow the NHST process to conduct the analysis. Write a complete interpretation of your results. 
+
+```{r}
+
+```
+
+
+
+
+

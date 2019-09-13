@@ -1,0 +1,95 @@
+---
+title: 'Applied Linear Modeling'
+---
+
+
+## Data source 
+
+* The Foundation for AIDS Research (amFAR) includes distance to syringe exchange programs as one variable in the **Opioid & Health Indicators Database** (https://opioid.amfar.org/indicator/) 
+
+* The `dist_ssp_amfar_ch9.csv` data set is county-level data that includes the distance to a syringe exchange program from counties in the US 
+
+```{r}
+# distance to syringe program data
+dist.ssp <- read.csv(file = "dist_ssp_amfar_ch9.csv")
+
+# summary
+summary(object = dist.ssp)
+```
+
+## Codebook 
+
+Based on the amFAR website, the variables have the following meanings:
+
+* county: the county name 
+* STATEABBREVIATION: the two-letter abbreviation for the state the county is in 
+* dist_SSP: distance in miles to the nearest syringe services program 
+* HIVprevalence: people age 13 and older living with diagnosed HIV per 100,000 
+* opioid_RxRate: number of opioid prescriptions per 100 people 
+* pctunins: percentage of the civilian noninstitutionalized population with no health insurance coverage 
+* metro: county is non-metro, which includes open countryside, rural towns, or smaller cities with up to 49,999 people, or metro 
+
+## A research question 
+
+**How can uninsurance, metro or non-metro status, HIV prevalence, and number of opioid prescriptions predict or explain distance to the nearest syringe program at the county level?**
+
+## But first, descriptives 
+
+```{r}
+# open the tidyverse
+library(package = "tidyverse")
+
+# checking distributions for continuous
+dist.ssp %>%
+  ggplot(aes(x = dist_SSP)) +
+  geom_histogram(fill = "#7463AC", color = "white") +
+  theme_minimal()
+dist.ssp %>%
+  ggplot(aes(x = HIVprevalence)) +
+  geom_histogram(fill = "#7463AC", color = "white") +
+  theme_minimal()
+dist.ssp %>%
+  ggplot(aes(x = opioid_RxRate)) +
+  geom_histogram(fill = "#7463AC", color = "white") +
+  theme_minimal()
+dist.ssp %>%
+  ggplot(aes(x = pctunins)) +
+  geom_histogram(fill = "#7463AC", color = "white") +
+  theme_minimal()
+
+```
+
+## Make the table 
+
+```{r}
+# make a table of descriptives
+library(package = "tableone")
+
+# dist_SSP and HIVprevalence are skewed
+ssp.table <- CreateTableOne(data = dist.ssp,
+                         vars = c('dist_SSP', 'HIVprevalence',
+                                  'opioid_RxRate', 'pctunins',
+                                  'metro'))
+print(ssp.table, nonnormal = c("dist_SSP", "HIVprevalence"),
+      showAllLevels = TRUE)
+```
+
+## Using R to compute the slope 
+
+```{r}
+# linear regression of distance to syringe program by percent uninsured
+dist.by.unins <- lm(formula = dist_SSP ~ pctunins, 
+                data = dist.ssp, na.action = na.exclude)
+summary(dist.by.unins)
+```
+
+## Computing confidence intervals for the slope and intercept 
+
+* Compute confidence intervals using the standard error of the slope using `confint()` function with the `dist.by.unins` linear regression model object 
+
+```{r}
+# confidence interval for regression parameters
+ci.dist.by.unins <- confint(dist.by.unins)
+ci.dist.by.unins
+```
+
