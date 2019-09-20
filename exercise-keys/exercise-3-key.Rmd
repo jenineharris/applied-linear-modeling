@@ -1,0 +1,156 @@
+---
+title: "exercises-3"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+(3) Import the data in the `water_educ_2015_who_unesco_ch8.csv` file 
+
+```{r}
+# import data
+water.educ <- read.csv(file = "water_educ_2015_who_unesco_ch8.csv")
+
+# view it
+summary(object = water.educ)
+
+```
+
+(4) Make a table of descriptive statistics for all the variables in the data except for country. There are multiple ways to do this. You could take a subset of variables in a smaller data frame and make a table of them all, or you could read the help documentation for `CreateTableOne` to learn how to choose variables for a table with the `vars = ` argument. Be sure to use appropriate statistics for each variable. 
+
+```{r}
+# open tidyverse
+library(package = "tidyverse")
+
+# get some histograms to see distributions of everything
+water.educ %>% 
+  ggplot(aes(x = med.age)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.1dollar)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.basic2015sani)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.safe2015sani)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.basic2015water)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.safe2015water)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = perc.in.school)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = female.in.school)) + geom_histogram()
+water.educ %>% 
+  ggplot(aes(x = male.in.school)) + geom_histogram()
+
+# use tableone to make a table of all variables
+library(package = "tableone")
+desc.table <- CreateTableOne(data = water.educ, 
+                             vars = c("med.age", "perc.1dollar",
+                                      "perc.basic2015sani", "perc.safe2015sani",
+                                      "perc.basic2015water", "perc.safe2015water",
+                                      "perc.in.school", "female.in.school", 
+                                      "male.in.school"))
+print(desc.table, nonnormal = c("med.age", "perc.1dollar",
+                                "perc.basic2015sani", "perc.safe2015sani",
+                                "perc.basic2015water", "perc.safe2015water",
+                                "perc.in.school", "female.in.school",
+                                "male.in.school"))
+```
+
+(4) Use a scatterplot to examine the relationship between `male.in.school` and `female.in.school` 
+
+```{r}
+# plot male and female in school
+water.educ %>% 
+  ggplot(aes(x = male.in.school, y = female.in.school)) + 
+  geom_point()
+
+```
+
+
+(5) Use a scatterplot to examine the relationship between `male.in.school` and `perc.basic2015water` 
+
+```{r}
+# plot male and female in school
+water.educ %>% 
+  ggplot(aes(x = male.in.school, y = perc.basic2015water)) + 
+  geom_point()
+
+```
+
+(6) Based on the scatterplots from questions 4 and 5, make predictions about what you would find when you conduct Pearson correlation analyses for `male.in.school` and `female.in.school` and for `male.in.school` and `perc.basic2015water`.
+
+(7) Conduct a Pearson's r correlation analysis for each pair of variables. Interpret each r statistic in terms of direction, size, and significance. 
+
+```{r}
+# correlations
+cor.test(x = water.educ$male.in.school, 
+         y = water.educ$female.in.school)
+cor.test(x = water.educ$male.in.school, 
+         y = water.educ$perc.basic2015water)
+cor.test(x = water.educ$female.in.school, 
+         y = water.educ$perc.basic2015water)
+
+```
+
+(8) Check assumptions for the Pearson's r for each pair of variables. 
+
+```{r}
+# males in school and females in school 
+water.educ %>% 
+  ggplot(aes(x = male.in.school, y = female.in.school)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE,
+              aes(color = "Fit line")) +
+  geom_smooth(method = "loess", se = FALSE,
+              aes(color = "Loess curve")) +
+  theme_minimal() +
+  scale_color_manual(values = c("gray60", "deeppink"),
+                     name = "")
+
+# males in school and basic water access
+water.educ %>% 
+  ggplot(aes(x = male.in.school, y = perc.basic2015water)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE,
+              aes(color = "Fit line")) +
+  geom_smooth(method = "loess", se = FALSE,
+              aes(color = "Loess curve")) +
+  theme_minimal() +
+  scale_color_manual(values = c("gray60", "deeppink"),
+                     name = "")
+
+# females in school and basic water access 
+water.educ %>% 
+  ggplot(aes(x = female.in.school, y = perc.basic2015water)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE,
+              aes(color = "Fit line")) +
+  geom_smooth(method = "loess", se = FALSE,
+              aes(color = "Loess curve")) +
+  theme_minimal() +
+  scale_color_manual(values = c("gray60", "deeppink"),
+                     name = "")
+
+```
+
+(9) If assumptions are not met for the Pearson's r, conduct and interpret a Spearman's correlation analysis including assumption checking. Interpret your results. 
+
+```{r}
+# correlations
+cor.test(x = water.educ$male.in.school, 
+         y = water.educ$female.in.school,
+         method = "spearman")
+cor.test(x = water.educ$male.in.school, 
+         y = water.educ$perc.basic2015water,
+         method = "spearman")
+cor.test(x = water.educ$female.in.school, 
+         y = water.educ$perc.basic2015water,
+         method = "spearman")
+```
+
+
+
+
+
