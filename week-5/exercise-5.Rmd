@@ -1,0 +1,38 @@
+---
+title: "Exercise 5"
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to practice conducting and interpreting a multiple linear regression model. 
+
+## Exercises 
+
+* Save this file and the `dist_ssp_amfar_ch9.csv` data file 
+* If you have not already, read the readings for this week
+
+(1) Based on your readings for this week, what are dummy variables and how are they used in linear regression? Cite the reading(s) you used to answer this question.
+
+(2) Copy the code for the simple linear regression model you build in Exercise 4 and paste it into this document.
+
+```{r}
+
+```
+
+
+(3) Starting with the model from Exercise 4, add the metro variable and the percent uninsured variable to the model. Run the model and write a full interpretation of what you found.
+
+
+```{r}
+
+```
+
+
+(4) Use the partial-F test to compare the simple linear model from Exercise 4 (pasted above in #2) with the larger model from #3. Interpret the results. 
+
+
+```{r}
+
+```
+

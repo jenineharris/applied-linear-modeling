@@ -1,0 +1,40 @@
+---
+title: "Week 5 warm-up"
+date: "September 24, 2019"
+output: html_document
+---
+
+## Import the data sets  
+
+```{r}
+# open the foreign package to import SPSS data
+library()
+
+# bring in the four data sets with .sav file extensions
+# the first one is done for you, add code for the other 3
+anscombe1 <- read.spss(file = "anscombe1.sav", to.data.frame = TRUE)
+
+```
+
+## Analyze each data set 
+
+```{r}
+# anscombe 1
+
+```
+
+```{r}
+# anscombe 2 
+
+```
+
+```{r}
+# anscombe 3
+
+```
+
+```{r}
+# anscombe 4
+
+```
+

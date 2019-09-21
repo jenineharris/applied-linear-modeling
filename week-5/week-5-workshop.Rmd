@@ -1,0 +1,344 @@
+---
+title: 'Applied Linear Modeling'
+date: 'September 24, 2019'
+---
+
+```{r}
+# distance to syringe program data
+dist.ssp <- read.csv(file = "dist_ssp_amfar_ch9.csv")
+
+# summary
+summary(object = dist.ssp)
+```
+
+## Codebook 
+
+Based on the amFAR website, the variables have the following meanings:
+
+* county: the county name 
+* STATEABBREVIATION: the two-letter abbreviation for the state the county is in 
+* dist_SSP: distance in miles to the nearest syringe services program 
+* HIVprevalence: people age 13 and older living with diagnosed HIV per 100,000 
+* opioid_RxRate: number of opioid prescriptions per 100 people 
+* pctunins: percentage of the civilian noninstitutionalized population with no health insurance coverage 
+* metro: county is non-metro, which includes open countryside, rural towns, or smaller cities with up to 49,999 people, or metro 
+
+## A research question 
+
+**How can uninsurance, metro or non-metro status, HIV prevalence, and number of opioid prescriptions predict or explain distance to the nearest syringe program at the county level?**
+
+## But first, descriptives 
+
+```{r}
+# make a table of descriptives
+library(package = "tableone")
+
+# dist_SSP and HIVprevalence are skewed
+ssp.table <- CreateTableOne(data = dist.ssp,
+                         vars = c('dist_SSP', 'HIVprevalence',
+                                  'opioid_RxRate', 'pctunins',
+                                  'metro'))
+print(ssp.table, nonnormal = c("dist_SSP", "HIVprevalence"),
+      showAllLevels = TRUE)
+```
+
+## Revisiting our original model  
+
+```{r}
+# linear regression of distance to syringe program by percent uninsured
+dist.by.unins <- lm(formula = dist_SSP ~ pctunins, 
+                data = dist.ssp, na.action = na.exclude)
+summary(dist.by.unins) 
+```
+
+## Revisiting the confidence intervals 
+
+```{r}
+# confidence interval for regression parameters
+ci.dist.by.unins <- confint(dist.by.unins)
+ci.dist.by.unins
+```
+
+## Adding a binary variable to the model 
+
+```{r eval = FALSE} 
+# open the tidyverse
+library(package = "tidyverse")
+
+# metro and distance to SSP
+dist.ssp %>%
+  ggplot(aes(x = metro, y = dist_SSP, fill = metro)) +
+  geom_jitter(aes(color = metro), alpha = .6) +
+  geom_boxplot(aes(fill = metro), alpha = .4) + 
+  labs(x = "Type of county", 
+       y = "Miles to syringe program") +
+  scale_fill_manual(values = c("#78A678", "#7463AC"), guide = FALSE) + 
+  scale_color_manual(values = c("#78A678", "#7463AC"), guide = FALSE) +
+  theme_minimal() 
+```
+
+## Distance to syringe program and metro status 
+
+```{r echo = FALSE} 
+library(package = "tidyverse")
+# metro and distance to SSP
+dist.ssp %>%
+  ggplot(aes(x = metro, y = dist_SSP, fill = metro)) +
+  geom_jitter(aes(color = metro), alpha = .6) +
+  geom_boxplot(aes(fill = metro), alpha = .4) + 
+  labs(x = "Type of county", 
+       y = "Miles to syringe program") +
+  scale_fill_manual(values = c("#78A678", "#7463AC"), guide = FALSE) + 
+  scale_color_manual(values = c("#78A678", "#7463AC"), guide = FALSE) +
+  theme_minimal() 
+```
+
+## Adding metro to the model 
+
+```{r}
+# linear regression distance to syringe program by
+# uninsured percent and metro status in 500 counties
+dist.by.unins.metro <- lm(formula = dist_SSP ~ pctunins +
+                        metro, data = dist.ssp)
+summary(object = dist.by.unins.metro)
+```
+
+## Get some confidence intervals 
+
+```{r}
+# confidence interval for regression parameters
+ci.dist.by.unins.met <- confint(dist.by.unins.metro)
+ci.dist.by.unins.met
+```
+
+## Visualizing the model 
+
+```{r}
+# graphing the regression model with percent uninsured and metro
+dist.ssp %>%
+  ggplot(aes(x = pctunins, y = dist_SSP, group = metro)) +
+  geom_line(data = broom::augment(dist.by.unins.metro), 
+            aes(y = .fitted, linetype = metro)) +
+  geom_point(aes(color = metro), alpha = .4, size = 2) + 
+  theme_minimal() + 
+  scale_color_manual(values = c("dodgerblue2", "deeppink"), name = "County") +
+  labs(y = "Miles to nearest syringe program", x = "County percent uninsured") +
+  scale_linetype_manual(values = c(1,2), name = "Regression line\n(predicted values)") 
+  
+```
+
+```{r warning=FALSE, message=FALSE}
+# check normality of distance variable
+dist.plot <- dist.ssp %>%
+  ggplot(aes(x = dist_SSP)) + 
+  geom_histogram(fill = "#7463AC", color = "white") + 
+  theme_minimal() + 
+  labs(x = "Miles to syringe program",
+       y = "Number of counties",
+       subtitle = "Distance to syringe program") 
+# check normality of uninsured variable
+perc.plot <- dist.ssp %>%
+  ggplot(aes(x = HIVprevalence)) + 
+  geom_histogram(fill = "#7463AC", color = "white") + 
+  theme_minimal() + 
+  labs(x = "HIV cases per 100,000",
+       y = "Number of counties",
+       subtitle = "HIV prevalence")
+
+gridExtra::grid.arrange(dist.plot, perc.plot)
+
+```
+
+## Another way to check normality: Q-Q plots
+
+```{r}
+# Q-Q plot of distance variable to check normality
+dist.ssp %>%
+  ggplot(aes(sample = dist_SSP)) + 
+  stat_qq(aes(color = "County"), alpha = .6) + 
+  geom_abline(aes(intercept = mean(dist_SSP), slope = sd(dist_SSP), 
+                  linetype = "Normally distributed"), color = "gray60", size = 1) +
+  theme_minimal() + 
+  labs(x = "Theoretical normal distribution",
+       y = "Observed miles to syringe program") +
+  scale_color_manual(values = "#7463AC", name = "") +
+  scale_linetype_manual(values = 1, name = "")
+```
+
+## Another way to check normality: Q-Q plots
+
+```{r}
+# Q-Q plot of distance variable to check normality
+dist.ssp %>%
+  ggplot(aes(sample = HIVprevalence)) + 
+  stat_qq(aes(color = "County"), alpha = .6) + 
+  geom_abline(aes(intercept = mean(HIVprevalence), slope = sd(HIVprevalence), 
+                  linetype = "Normally distributed"), color = "gray60", size = 1) +
+  theme_minimal() + 
+  labs(x = "Theoretical normal distribution",
+       y = "HIV cases per 100,000") +
+  scale_color_manual(values = "#7463AC", name = "") +
+  scale_linetype_manual(values = 1, name = "")
+```
+
+## Square root transformation of distance  
+
+```{r warning = FALSE, message=FALSE}
+dist.ssp %>%
+  ggplot(aes(x = sqrt(x = dist_SSP))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Square root of distance", y = "")+
+  theme_minimal()
+```
+
+## Cube root transformation of distance 
+
+```{r warning = FALSE, message=FALSE}
+ dist.ssp %>%
+  ggplot(aes(x = (dist_SSP)^(1/3))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Cube root of distance", y = "Number of counties") +
+  theme_minimal()
+```
+
+## Inverse of distance 
+
+```{r warning = FALSE, message=FALSE}
+ dist.ssp %>%
+  ggplot(aes(x = 1/dist_SSP)) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Inverse distance", y = "Number of counties") +
+  theme_minimal()
+```
+
+## Log of distance 
+
+```{r warning = FALSE, message=FALSE}
+ dist.ssp %>%
+  ggplot(aes(x = log(x = dist_SSP))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Log of distance", y = "Number of counties") +
+  theme_minimal()
+```
+
+## All transformations for distance 
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+# histogram of square root of dist_SSP
+cube.root.dist <- dist.ssp %>%
+  ggplot(aes(x = (dist_SSP)^(1/3))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Cube root of distance", y = "Number of counties") +
+  theme_minimal()
+sq.root.dist <- dist.ssp %>%
+  ggplot(aes(x = sqrt(x = dist_SSP))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Square root of distance", y = "")+
+  theme_minimal()
+inverse.dist <- dist.ssp %>%
+  ggplot(aes(x = 1/dist_SSP)) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Inverse of distance", y = "Number of counties")+
+  theme_minimal()
+log.dist <- dist.ssp %>%
+  ggplot(aes(x = log(x = dist_SSP))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Log of distance", y = "")+
+  theme_minimal()
+
+# this requires the gridExtra package to be installed
+# view options for transformation
+gridExtra::grid.arrange(cube.root.dist, sq.root.dist,
+                        inverse.dist, log.dist)
+
+```
+
+## All transformations for HIV prevalence 
+
+```{r warning = FALSE, message = FALSE}
+# histogram of transformed HIVprevalence
+# cube root
+cube.root.dist <- dist.ssp %>%
+  ggplot(aes(x = (HIVprevalence)^(1/3))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Cube root of HIV prevalence", y = "Number of counties")+
+  theme_minimal()
+# square root
+sq.root.dist <- dist.ssp %>%
+  ggplot(aes(x = sqrt(x = HIVprevalence))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Square root of HIV prevalence", y = "")+
+  theme_minimal()
+# inverse
+inverse.dist <- dist.ssp %>%
+  ggplot(aes(x = 1/HIVprevalence)) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Inverse of HIV prevalence", y = "Number of counties")+
+  theme_minimal()
+# log
+log.dist <- dist.ssp %>%
+  ggplot(aes(x = log(x = HIVprevalence))) +
+  geom_histogram(fill = "#7463AC", col = "white") +
+  labs(x = "Log of HIV prevalence", y = "")+
+  theme_minimal()
+
+# view options for transformation
+gridExtra::grid.arrange(cube.root.dist, sq.root.dist,
+                        inverse.dist, log.dist)
+
+```
+
+## Model with transformed variables 
+
+```{r message = FALSE, warning = FALSE}
+# linear regression of distance by percent uninsured, HIV prevalence,
+# metro status
+dist.full.model <- lm(formula = (dist_SSP)^(1/3) ~ pctunins +
+                      log(x = HIVprevalence) + metro,
+                      data = dist.ssp,
+                      na.action = na.exclude)
+summary(object = dist.full.model) 
+```
+
+## Making the models comparable 
+
+```{r}
+# drop observations with missing HIV data
+dist.ssp.small <- dist.ssp %>%
+  drop_na(HIVprevalence) %>%
+  mutate(log.HIV = log(x = HIVprevalence)) %>%
+  drop_na(log.HIV)
+```
+## Re-run the models with the new data frame 
+
+```{r message = FALSE, warning = FALSE}
+# re-run regressions with the smaller data frame
+dist.unins.metro.trans <- lm(formula = (dist_SSP)^(1/3) ~ pctunins + metro,
+                      data = dist.ssp.small)
+
+dist.full.model.small <- lm(formula = (dist_SSP)^(1/3) ~ pctunins + 
+                              metro + log(x = HIVprevalence),
+                      data = dist.ssp.small)
+```
+    
+
+## Conducting a Partial-F test
+
+```{r}
+# partial F test for dist.by.unins.metro and dist.full.model
+anova(object = dist.unins.metro.trans, dist.full.model.small)
+```
+
+## A cool plot 
+
+```{r}
+# graphing the regression model with three predictors
+dist.ssp %>%
+  ggplot(aes(x = pctunins, y = dist_SSP, group = metro, size = HIVprevalence)) +
+  geom_point(aes(color = metro), alpha = .4) + 
+  theme_minimal() + 
+  scale_color_manual(values = c("dodgerblue2", "deeppink"), name = "County") +
+  scale_size(range = c(1, 10), name="HIV cases\nper 100,000") +
+  labs(y = "Miles to nearest syringe program", x = "County percent uninsured")
+```
+
