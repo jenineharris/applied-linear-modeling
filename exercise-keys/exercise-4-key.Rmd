@@ -1,0 +1,77 @@
+---
+title: "exercises-4"
+output: html_document
+---
+
+# Purpose 
+
+These exercises are designed to practice conducting and interpreting a simple linear regression model. 
+
+## Exercises 
+
+* Save this file and the `dist_ssp_amfar_ch9.csv` data file 
+* If you have not already, read the readings for this week
+
+(1) **Use the readings for this week** to answer the following questions and identify (cite) which reading you found the answer in: 
+
+* what are hat-values?  
+
+* what is the coefficient of determination? 
+
+* what are the four steps in a regression analysis? 
+
+
+(2) Conduct a simple linear regression analysis with the outcome **distance to a syringe program** and the predictor **number of opioid prescriptions per 100 people**. Follow the NHST process to conduct the analysis. Write a complete interpretation of your results. 
+
+STEPS 2 & 3: COMPUTE TEST STATISTIC AND P-VALUE
+
+```{r}
+# distance to syringe program data
+dist.ssp <- read.csv(file = "dist_ssp_amfar_ch9.csv")
+
+# model 
+dist.by.opioid.rate <- lm(formula = dist_SSP ~ opioid_RxRate, 
+                data = dist.ssp, na.action = na.exclude)
+summary(dist.by.opioid.rate)
+
+# confidence intervals
+ci.dist.by.opioid.rate <- confint(dist.by.opioid.rate)
+ci.dist.by.opioid.rate
+```
+
+STEP 1: WRITE HYPOTHESES FOR SLOPE 
+
+H0: Opioid prescription rate is not useful in helping to predict or explain distance to a syringe program. 
+
+HA: Opioid prescription rate is useful in helping to predict or explain distance to a syringe program.
+
+STEPS 2 & 3: TEST STATISTIC AND P-VALUE
+
+The test statistic is t = -2.24 with a p-value of .03
+
+STEPS 4 & 5: MAKE A DECISION AND REPORT RESULTS
+
+> The null hypothesis is rejected; opioid prescription rate is a statistically significant and positive predictor of distance to a syringe program (b = -.26; t = -2.24; p = .03). As opioid prescription rate goes up, distance to a syringe program goes down. For every one additional prescription per 100 people, the distance to a syringe program is .26 miles closer. The 95% confidence interval for the slope indicated that, in the population of all counties, the distance to a syringe programs is likely .03 to .48 miles closer for every one additional prescription per 100 people in a county (95% CI: .03-.48).
+
+STEP 1: WRITE HYPOTHESES FOR FULL MODEL 
+
+H0: A model with opioid prescription rate is no better than the mean at explaining distance to syringe program. 
+
+HA: A model with opioid prescription rate is better than the mean at explaining distance to syringe program.
+
+STEP 2 & 3: TEST STATISTIC AND P-VALUE
+
+F(1, 498) = 5.01; p = .03
+
+STEP 4 & 5: MAKE A DECISION AND REPORT RESULTS 
+
+> The null hypothesis is rejected; a model including opioid prescription rate is statistically significanly better than the mean of distance at explaining the distance to a syringe program [F(1, 498) = 5.01; p = .03].
+
+**FULL INTERPRETATION WITH MODEL FIT**
+
+> The null hypothesis is rejected; opioid prescription rate is a statistically significant and positive predictor of distance to a syringe program (b = -.26; t = -2.24; p = .03). As opioid prescription rate goes up, distance to a syringe program goes down. For every one additional prescription per 100 people, the distance to a syringe program is .26 miles closer. The 95% confidence interval for the slope indicated that, in the population of all counties, the distance to a syringe programs is likely .03 to .48 miles closer for every one additional prescription per 100 people in a county (95% CI: .03-.48). The null hypothesis is rejected; a model including opioid prescription rate is statistically significantly better than the mean of distance at explaining the distance to a syringe program [F(1, 498) = 5.01; p = .03]. The model accounted for about 1% of the variation in distance ($R^2$ = .01).
+
+
+
+
+
