@@ -1,0 +1,162 @@
+---
+title: 'ALM week 9: logistic regression'
+---
+
+## Import the data
+
+```{r echo=TRUE}
+# import the libraries data file
+libraries <- read.csv("pew_libraries_2016_cleaned_ch10.csv")
+
+# check the data
+summary(object = libraries)
+```
+
+## Codebook 
+
+The data are publicly available from the Pew Internet & American Life website. The variables are: 
+
+* **age:** age in years
+* **sex:** sex (female/male)
+* **rurality:** lives in rural/suburban/urban area
+* **disabled:** has a disability (yes/no)
+* **uses.lib:** has used library in the last year (yes/no) 
+* **ses:** socioeconomic status (high/medium/low)
+* **raceth:** race and ethnicity (Hispanic, Non-Hispanic Black, Non-Hispanic White)
+* **educ:** highest education completed (< HS, HS to 2-year degree, Four-year degree or more)
+* **parent:** parent status (parent/not parent)
+
+## Exploratory data analysis: examine distributions 
+
+```{r message = FALSE, warning = FALSE}
+# open tidyverse
+library(package = "tidyverse")
+
+# examine the distribution of age 
+libraries %>% 
+  ggplot(aes(x = age)) + 
+  geom_density(fill = "#7463AC", alpha = .6) + 
+  theme_minimal() +
+  labs(y = "Probability density", x = "Age in years")
+```
+
+## Exploratory data analysis: make a table 
+
+```{r}
+# open tableone
+library(package = "tableone")
+# create the table
+table.desc <- CreateTableOne(data = libraries, 
+                             strata = 'uses.lib',
+                             vars = c("age", "sex", "parent", "disabled",
+                                      "ses", "raceth", "educ", "rurality"))
+print(table.desc, 
+      nonnormal = 'age', 
+      showAllLevels = TRUE)
+
+```
+
+## Clean the outcome for the regression model  
+
+```{r}
+# recode so yes = 1 and no = 0
+libraries.cleaned <- libraries %>%
+  mutate(uses.lib.num = recode(uses.lib,
+                               `yes` = 1,
+                               `no` = 0))
+
+# check recoding
+table(libraries.cleaned$uses.lib.num, libraries.cleaned$uses.lib)
+```
+
+## Estimate the model and get GVIF
+
+```{r warning=FALSE, message=FALSE}
+# predict library use 
+libUseModel <- glm(uses.lib.num ~ age + sex + parent +
+                     disabled + ses + raceth + educ + rurality,
+                   data = libraries.cleaned)
+
+# compute GVIF for libUseModel
+library(car)
+vif(mod = libUseModel)
+```
+
+## Check assumption 3: Linearity 
+
+```{r message = FALSE, warning = FALSE}
+# make a variable of the log odds of the predicted probabilities
+logodds.use <- log(x = libUseModel$fitted.values/(1-libUseModel$fitted.values))
+
+# make a small data frame with the log odds variable and the age predictor
+linearity.data <- data.frame(logodds.use, age = libUseModel$model$age)
+
+# create a plot with linear and actual relationships shown
+linearity.data %>%
+  ggplot(aes(x = age, y = logodds.use))+
+  geom_point(aes(size = "Observation"), color = "gray60", alpha = .6) +
+  geom_smooth(se = FALSE, aes(color = "Loess curve")) + 
+  geom_smooth(method = lm, se = FALSE, aes(color = "linear")) + 
+  theme_minimal() +
+  labs(x = "Age in years", y = "Log-odds of library use predicted probability") +
+  scale_color_manual(name="Type of fit line", values=c("dodgerblue2", "deeppink")) +
+  scale_size_manual(values = 1.5, name = "")
+
+```
+
+
+
+## Model diagnostics 
+
+```{r}
+# use same code as from linear regression 
+# change the cutoff for leverage to reflect the 13 parameters in the model 
+libraries.cleaned.diag <- libraries.cleaned %>%
+  drop_na() %>%
+  mutate(standardres = rstandard(model = libUseModel)) %>%
+  mutate(cooks.dist = cooks.distance(model = libUseModel)) %>%
+  mutate(lever = hatvalues(model = libUseModel)) %>%
+  mutate(outlier.infl = as.numeric(x = lever > 2*13/n()) +
+           as.numeric(x = cooks.dist > 4/n()) +
+           as.numeric(x = abs(x = standardres) > 1.96))
+
+# examine the outliers & influential 
+libraries.cleaned.diag %>%
+  filter(outlier.infl >= 2)
+```
+
+    
+## Model results 
+
+```{r warning=FALSE, message = FALSE}
+# use odds.n.ends to get model results
+library(package = "odds.n.ends")
+odds.n.ends(libUseModel)
+```
+
+
+    
+## Model significance 
+
+
+```{r echo = TRUE}
+# get baseline probability
+prop.table(x = table(libraries.cleaned$uses.lib))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
