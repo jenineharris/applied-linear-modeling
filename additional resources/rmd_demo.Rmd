@@ -1,0 +1,74 @@
+---
+title: "r Markdown Demo"
+author: "Laura Brugger"
+date: "10/21/2019"
+output:
+  html_document: default
+---
+
+## Embedding Code Chunks
+
+- you can embed an R code chunk like this: 
+
+```{r}
+summary(cars)
+```
+
+## Embedding Plots
+
+- you can also embed plots like this (we add `echo = FALSE` to suppress the code): 
+
+```{r, echo = FALSE}
+plot(cars)
+```
+
+
+## RMD for Formatting
+
+1. Headers 
+
+- Place one or more hashtags at the start of a line that will be a header (or sub-header) 
+
+# Largest
+## A bit smaller
+### Even smaller
+#### You get the picture
+##### This is as small as it gets
+###### For real this time
+
+2. Italicized and Bold Text
+- surround italicized text with asterisks *like this*
+- surround bold text with double asterisks **like this**
+
+
+3. Lists 
+
+- group lines into bullet points that begin with asterisks. Leave a blank line before the first bullet: 
+
+This is a list: 
+
+* item 1
+* item 2
+* item 3
+
+4. Hyperlinks 
+
+- surround links with brackets and provide the link target in parentheses like this: [Github](www.github.com)
+
+## Rendering
+
+- to transform your .Rmd file to `html`, `pdf`, or `word document`, click the "Knit" icon
+- select your desired format
+- `rmarkdown` will duplicate your text in the new file format using the instructions you provided
+
+## You Try: 
+
+Reproduce the following paragraph in a new RMD file and then try knitting to each output: 
+
+**Cuttlefish** are marine molluscs in the *cephalopod* family. This family also includes: 
+
+* squid
+* octopuses 
+* nautiluses
+
+Visit the [Cuttlefish Wiki](https://en.wikipedia.org/wiki/Cuttlefish) page to read more! 

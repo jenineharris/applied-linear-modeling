@@ -1,0 +1,93 @@
+---
+title: "R Markdown"
+author: "Laura Brugger"
+date: "10/8/2019"
+output: ioslides_presentation
+---
+
+## Agenda
+
+- Overview of Rmd
+- Embedding Code Chunks
+- Embedding Plots
+- Formatting Text
+- Knitting Documents
+
+## Overview
+
+- R Markdown is a file format for making documents with R
+- An R Markdown document is written in markdown
+- Markdown is an easy-to-write plain text format and contains chunks of embedded R code
+- When you click the **knit** button, a document will be generated that includes both content and any embedded R code chunks
+- this is what we've been using all semester for .rmd files! 
+
+## Embedding Code Chunks
+
+- you can embed an R code chunk like this: 
+
+```{r}
+summary(cars)
+```
+
+## Embedding Plots
+
+- you can also embed plots like this (we use `echo = FALSE` to suppress the code): 
+
+```{r, echo = FALSE}
+plot(cars)
+```
+
+## Markdown for formatted text (1/3)
+
+- .Rmd files use text written in `markdown`
+- `markdown` is a set of conventions for formatting plain text
+- You can use markdown to format
+  + bold and italic
+  + lists
+  + headers & Section titles
+  + hyperlinks
+  + lots more! 
+  
+## Markdown for formatted text (2/3)
+
+- **headers** - Place one or more hashtags at the start of a line that will be a header (or sub-header) 
+  +  `# Main Heading` 
+  + `## Smaller Heading`
+  +  `### Even Smaller Heading`
+
+- **italicized and bold text** - surround italized text with asterisks `*like this*` and surround bold text with two asterisks `**like this**`
+  
+## Markdown for formatted text (3/3)
+
+- **lists** - group lines into bullet points that begin with asterisks. Leave a blank line before the first bullet: 
+
+This is a list: 
+
+- ` * item 1`
+- ` * item 2`
+- ` * item 3`
+
+* **hyperlinks** - surround links with brackets and provide the link target in parentheses like this: `[Github](www.github.com)`
+
+## Rendering
+
+- to transform your .Rmd file to html, pdf, or word document, click the `Knit` icon
+- select your desired format
+- `rmarkdown` will duplicate your text in the new file format using the instructions you provided
+
+# Let's try it!
+
+## You Try: 
+
+Reproduce the following paragraph in a new RMD file and then try knitting to each output: 
+
+**Cuttlefish** are marine molluscs in the *cephalopod* family. This family also includes: 
+
+* squid
+* octopuses 
+* nautiluses
+
+Visit the [Cuttlefish Wiki](https://en.wikipedia.org/wiki/Cuttlefish) page to read more! 
+
+
+
