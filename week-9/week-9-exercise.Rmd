@@ -5,21 +5,21 @@ output: html_document
 
 ## Outbreak! 
 
-It has happened; Zombies have appeared in the U.S. They are beginning to take over large urban centers. In just six days, several cities have become disabled. You are a disease researcher with the Centers for Disease Control & Prevention (CDC). Despite the CDC’s Zombie Preparedness campaign (http://www.cdc.gov/phpr/zombies.htm), an effective strategy for dealing with the rapidly developing Zombie outbreak has still not been established. It is your responsibility to figure out who is most likely to become a zombie, and what readiness items you can distribute to help those who are still susceptible. To do this, you will develop a statistical model to examine the predictors of being turned so that you can take action to slow or prevent the spread of Zombies. 
+It has happened; Zombies have appeared in the U.S. They are beginning to take over large urban centers. In just six days, several cities have become disabled. You are a disease researcher with the Centers for Disease Control & Prevention (CDC). Despite the CDC Zombie Preparedness campaign (http://www.cdc.gov/phpr/zombies.htm), an effective strategy for dealing with the rapidly developing Zombie outbreak has still not been established. It is your responsibility to figure out who is most likely to become a zombie, and what readiness items you can distribute to help those who are still susceptible. To do this, you will develop a statistical model to examine the predictors of being turned into a zombie so that you can take action to slow or prevent the spread of Zombies. 
 
 Your surveillance team has collected information on 200 randomly selected adult U.S. citizens who were alive and well on the day the outbreak began. From archival data the surveillance team knows the age and gender of the citizens, along with whether they live in a rural, suburban, or urban location. By searching the home of each citizen, interviewing family members, and observing behavior, the zombie surveillance team has collected information on household size, readiness for the zombie outbreak before the outbreak began, and current zombie status: zombie or not zombie.
 
-**Note that the code chunks included can be moved or deleted and additional code chunks can be added as needed. Please organize your code and answers however it makes the most sense to you.**
+**Note that the code chunks included in this template can be moved or deleted and additional code chunks can be added as needed. Please organize your code and answers however it makes the most sense to you.**
 
 ## What predicts becoming a zombie?
 
-Using the zombie data that is available at the URL below, conduct a study to determine what predicts zombie status. Based on what you find, you will answer these questions: 
+Using the zombie data that is available at the URL below, conduct a study to determine what predicts zombie status. The analyses you will conduct below are designed to help you answer these questions: 
 
-(1)	Based on your model and whether or not **you** actually have the preparedness items listed in your home, predict your most likely status in the zombie attack.
+* Based on your model and whether or not **you** actually have the preparedness items listed in your home, predict your most likely status in the zombie attack.
 
-(2)	Who is most likely to be a zombie? 
+* Who is most likely to be a zombie? 
 
-(3)	Which of the preparedness items were important for remaining uninfected? Which did not make a difference? 
+* Which of the preparedness items were important for remaining uninfected? Which did not make a difference? 
 
 ```{r echo=TRUE}
 # DATA IMPORT
@@ -45,9 +45,9 @@ The zombie data includes the following:
 
 Before you begin, conduct 2 data management tasks: 
 
-(1) Use tidyverse and mutate to create a new variable called **waterPerson** that is the number of gallons of water per person for each observation in your data frame (waterPerson = water/household). Use **select** to remove the original water and household variables from the data frame.
+* Use tidyverse and mutate to create a new variable called **waterPerson** that is the number of gallons of water per person for each observation in your data frame (waterPerson = water/household). Use **select** to remove the original *water* and *household* variables from the data frame.
 
-(2) Recode zombie so that zombie = 1 and not zombie = 0
+* Recode zombie so that zombie = 1 and not zombie = 0
 
 ```{r}
 
@@ -55,11 +55,15 @@ Before you begin, conduct 2 data management tasks:
 
 ## Step 2: Exploratory data analysis 
 
-Use **tableone** to conduct bivariate analyses with **zombie** as the strata variable. Before you create the table, check the distributions of any continuous variables so that you can compute appropriate means or medians.  
+Use **tableone** to conduct bivariate analyses with **zombie** as the strata variable. Before you create the table, check the distributions of any continuous variables so that you can compute means or medians, which ever is more appropriate.  
 
 ```{r}
 
 ```
+
+(1) List the variables that are statistically significantly associated with zombie status in your table: 
+
+
 
 ## Step 3: Conduct the regression analysis 
 
@@ -85,7 +89,8 @@ Use logistic regression to explain zombie status. Use any variables shown to be 
 
 ```
 
-Did the model meet the assumptions?
+(2) Interpret the results of assumption checking:
+
 
 ## Step 5: Interpret the findings
 
@@ -95,18 +100,18 @@ Use the **odds.n.ends()** function to see the odds ratios, model significance, a
 
 ```
 
-Interpret significant odds ratios and their confidence intervals: 
+(3) Interpret significant odds ratios and their confidence intervals: 
 
 
-Interpret model significance:
+(4) Interpret model significance:
 
 
-Interpret model fit: 
+(5) Interpret model fit:
 
 
 ## Step 6: Compute your own probability of becoming a zombie 
 
-Use the logistic regression equation from the model and **your own data** (e.g., your age, how much water you have at your home) to predict your probability of becoming a zombie.
+Use the logistic regression equation from the model and **your own data** (e.g., your actual age, how much water you really have stored at your home) to predict your probability of becoming a zombie.
 
 It may be easiest to write the equation out on paper first, then use R to do the calculations. 
 
@@ -118,10 +123,17 @@ prob.zombie = 1 / (1 + exp(-()))
 prob.zombie
 ```
 
+(6) Interpret your probability:
 
 ## Step 7: Make recommendations
 
-What should the CDC do to protect those who are not yet zombies? What supplies do they need? Should they stay where they are or move somewhere else? What could you do to better protect yourself from becoming a zombie? 
+(7) What should the CDC do to protect those who are not yet zombies? 
+
+    + (a) What supplies do they need? 
+    
+    + (b) Should they stay where they are or move somewhere else? 
+
+(8) Thinking about your predicted probability, what evidence-based things could you do to better protect yourself from becoming a zombie? 
 
 
 
@@ -132,7 +144,7 @@ What should the CDC do to protect those who are not yet zombies? What supplies d
 
 
 
-**Final note: While it’s unlikely we will have a zombie attack in the near future, the supplies and scenarios in this project are based on emergency preparedness planning. To learn more about emergency preparedness for zombies, earthquakes, floods, etc, visit the CDC website: http://www.cdc.gov/phpr/zombies.htm**
+**Final note: While it is unlikely we will have a zombie attack in the near future, the supplies and scenarios in this project are based on emergency preparedness planning. To learn more about emergency preparedness for zombies, earthquakes, forest fires, floods, etc, visit the CDC website: http://www.cdc.gov/phpr/zombies.htm**
 
 
 
