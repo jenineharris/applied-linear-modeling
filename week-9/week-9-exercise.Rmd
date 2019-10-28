@@ -24,6 +24,7 @@ Using the zombie data that is available at the URL below, conduct a study to det
 ```{r echo=TRUE}
 # DATA IMPORT
 zombies <- read.csv("http://tinyurl.com/fobzombies")
+summary(object = zombies)
 ```
 
 ## Zombie codebook
@@ -39,7 +40,7 @@ The zombie data includes the following:
 * **radio:** have a battery powered radio (yes/no)
 * **flashlight:** have a flashlight (yes/no)
 * **firstaid:** have a first aid kit (yes/no)
-* **zombie:** zombie status (zombie, not zombie)
+* **zombie:** zombie status (1 = zombie, 0 = not zombie)
 
 ## Step 1: Data management 
 
@@ -47,7 +48,7 @@ Before you begin, conduct 2 data management tasks:
 
 * Use tidyverse and mutate to create a new variable called **waterPerson** that is the number of gallons of water per person for each observation in your data frame (waterPerson = water/household). Use **select** to remove the original *water* and *household* variables from the data frame.
 
-* Recode zombie so that zombie = 1 and not zombie = 0
+* Use mutate with *recode_factor* to recode zombie so that zombie = 1 and not zombie = 0, check with the table function to make sure it worked! (recode_factor works like recode for when your variable is a factor data type)
 
 ```{r}
 
@@ -116,6 +117,9 @@ Use the logistic regression equation from the model and **your own data** (e.g.,
 It may be easiest to write the equation out on paper first, then use R to do the calculations. 
 
 ```{r}
+# get the model summary
+summary()
+
 # predict your probability
 prob.zombie = 1 / (1 + exp(-()))
 
