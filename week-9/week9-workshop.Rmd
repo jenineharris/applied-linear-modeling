@@ -75,7 +75,8 @@ table(libraries.cleaned$uses.lib.num, libraries.cleaned$uses.lib)
 # predict library use 
 libUseModel <- glm(uses.lib.num ~ age + sex + parent +
                      disabled + ses + raceth + educ + rurality,
-                   data = libraries.cleaned)
+                   data = libraries.cleaned,
+                   family = "binomial")
 
 # compute GVIF for libUseModel
 library(car)

@@ -44,11 +44,9 @@ The zombie data includes the following:
 
 ## Step 1: Data management 
 
-Before you begin, conduct 2 data management tasks: 
+Before you begin, conduct a data management task: 
 
 * Use tidyverse and mutate to create a new variable called **waterPerson** that is the number of gallons of water per person for each observation in your data frame (waterPerson = water/household). Use **select** to remove the original *water* and *household* variables from the data frame.
-
-* Use mutate with *recode_factor* to recode zombie so that zombie = 1 and not zombie = 0, check with the table function to make sure it worked! (recode_factor works like recode for when your variable is a factor data type)
 
 ```{r}
 
