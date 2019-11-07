@@ -1,0 +1,242 @@
+---
+title: "Week 9 exercise: Zombie Attack!"
+output: html_document
+---
+
+## Outbreak! 
+
+It has happened; Zombies have appeared in the U.S. They are beginning to take over large urban centers. In just six days, several cities have become disabled. You are a disease researcher with the Centers for Disease Control & Prevention (CDC). Despite the CDC Zombie Preparedness campaign (http://www.cdc.gov/phpr/zombies.htm), an effective strategy for dealing with the rapidly developing Zombie outbreak has still not been established. It is your responsibility to figure out who is most likely to become a zombie, and what readiness items you can distribute to help those who are still susceptible. To do this, you will develop a statistical model to examine the predictors of being turned into a zombie so that you can take action to slow or prevent the spread of Zombies. 
+
+Your surveillance team has collected information on 200 randomly selected adult U.S. citizens who were alive and well on the day the outbreak began. From archival data the surveillance team knows the age and gender of the citizens, along with whether they live in a rural, suburban, or urban location. By searching the home of each citizen, interviewing family members, and observing behavior, the zombie surveillance team has collected information on household size, readiness for the zombie outbreak before the outbreak began, and current zombie status: zombie or not zombie.
+
+**Note that the code chunks included in this template can be moved or deleted and additional code chunks can be added as needed. Please organize your code and answers however it makes the most sense to you.**
+
+## What predicts becoming a zombie?
+
+Using the zombie data that is available at the URL below, conduct a study to determine what predicts zombie status. The analyses you will conduct below are designed to help you answer these questions: 
+
+* Based on your model and whether or not **you** actually have the preparedness items listed in your home, predict your most likely status in the zombie attack.
+
+* Who is most likely to be a zombie? 
+
+* Which of the preparedness items were important for remaining uninfected? Which did not make a difference? 
+
+```{r echo=TRUE}
+# DATA IMPORT
+zombies <- read.csv("http://tinyurl.com/fobzombies")
+
+# summary
+summary(object = zombies)
+```
+
+## Zombie codebook
+
+The zombie data includes the following: 
+
+* **zombieid:** unique identifier for each observed "person"
+* **age:** age in years
+* **gender:** sex (female/male)
+* **rurality:** lives in rural/suburban/urban area
+* **household:** how many people live in the household
+* **water:** gallons of water available 
+* **radio:** have a battery powered radio (yes/no)
+* **flashlight:** have a flashlight (yes/no)
+* **firstaid:** have a first aid kit (yes/no)
+* **zombie:** zombie status (1 = zombie, 0 = not zombie)
+
+## Step 1: Data management 
+
+Before you begin, create a new variable: 
+
+* Use tidyverse and mutate to create a new variable called **waterPerson** that is the number of gallons of water per person for each observation in your data frame (waterPerson = water/household). Use **select** to remove the original *water* and *household* variables from the data frame.
+
+```{r warning=FALSE, message=FALSE}
+library(package = "tidyverse")
+# recode to waterPerson
+zombies.cleaned <- zombies %>%
+  mutate(waterPerson = water/household) %>%
+  select(zombieid, age, gender, rurality, radio, flashlight, 
+         firstaid, zombie, waterPerson)
+
+summary(object = zombies.cleaned)
+
+```
+
+## Step 2: Exploratory data analysis 
+
+Use **tableone** to conduct bivariate analyses with **zombie** as the strata variable. Before you create the table, check the distributions of any continuous variables so that you can compute means or medians, which ever is more appropriate.  
+
+```{r}
+library(package = "tableone")
+
+# check age distribution 
+zombies.cleaned %>% 
+  ggplot(aes(x = age)) + 
+  geom_density(fill = "#7463AC", alpha = .6) + 
+  theme_minimal() +
+  labs(y = "Probability density", x = "Age in years")
+# check waterPerson distribution
+zombies.cleaned %>% 
+  ggplot(aes(x = waterPerson)) + 
+  geom_density(fill = "#7463AC", alpha = .6) + 
+  theme_minimal() +
+  labs(y = "Probability density", x = "Gallons of water per person")
+
+# make table
+table.desc <- CreateTableOne(data = zombies.cleaned,
+               strata = 'zombie',
+               vars = c('age', 'gender', 'rurality', 'radio', 'flashlight', 
+         'firstaid', 'waterPerson'))
+
+# print table with non-normal
+print(table.desc,
+      nonnormal = c('age', 'waterPerson'),
+      showAllLevels = TRUE)
+
+```
+
+(1) List the variables that are statistically significantly associated with zombie status in your table: 
+
+age, waterPerson, rurality, radio
+
+## Step 3: Conduct the regression analysis 
+
+Use logistic regression to explain zombie status. Use any variables shown to be **statistically significantly** associated with zombie status in Step 2 as the predictors in the model. 
+
+```{r}
+# model zombie
+zombieModel <- glm(zombie ~ age + waterPerson + rurality +
+                     radio,
+                   data = zombies.cleaned,
+                   family = "binomial")
+
+```
+
+## Step 4: Check the assumptions 
+
+* Independence of observations 
+
+* Linearity 
+
+```{r}
+# make a variable of the log odds of the predicted probabilities
+logodds.use <- log(x = zombieModel$fitted.values/(1-zombieModel$fitted.values))
+
+# make a small data frame with the log odds variable and the age predictor
+linearity.data <- data.frame(logodds.use, age = zombieModel$model$age, 
+                             waterPerson = zombieModel$model$waterPerson)
+
+# create a plot with linear and actual relationships shown
+linearity.data %>%
+  ggplot(aes(x = age, y = logodds.use))+
+  geom_point(aes(size = "Observation"), color = "gray60", alpha = .6) +
+  geom_smooth(se = FALSE, aes(color = "Loess curve")) + 
+  geom_smooth(method = lm, se = FALSE, aes(color = "linear")) + 
+  theme_minimal() +
+  labs(x = "Age in years", y = "Log-odds of zombie predicted probability") +
+  scale_color_manual(name="Type of fit line", values=c("dodgerblue2", "deeppink")) +
+  scale_size_manual(values = 1.5, name = "")
+
+# create a plot with linear and actual relationships shown
+linearity.data %>%
+  ggplot(aes(x = waterPerson, y = logodds.use))+
+  geom_point(aes(size = "Observation"), color = "gray60", alpha = .6) +
+  geom_smooth(se = FALSE, aes(color = "Loess curve")) + 
+  geom_smooth(method = lm, se = FALSE, aes(color = "linear")) + 
+  theme_minimal() +
+  labs(x = "Water per person", y = "Log-odds of zombie predicted probability") +
+  scale_color_manual(name="Type of fit line", values=c("dodgerblue2", "deeppink")) +
+  scale_size_manual(values = 1.5, name = "")
+```
+
+* No multicollinearity 
+
+```{r warning = FALSE, message=FALSE}
+# use car package to get GVIFs
+library(package = "car")
+vif(mod = zombieModel)
+```
+
+(2) Interpret the results of assumption checking:
+
+* Indep of obs seems ok 
+* Linearity meets for both variables 
+* No multicollinearity meets this assumption
+
+## Step 5: Interpret the findings
+
+Use the **odds.n.ends()** function to see the odds ratios, model significance, and model fit.
+
+```{r warning = FALSE, message=FALSE}
+library(package = "odds.n.ends")
+odds.n.ends(zombieModel)
+```
+
+(3) Interpret significant odds ratios and their confidence intervals: 
+
+For every one year increase in age, odds of being zombie decrease by 7% (OR = 1.07; CI: 1.04-1.11).
+
+For every additional gallon of water per person stored, odds of being a zombie decrease by 92% (OR = .08; CI: .02 - .23)  
+
+Suburban residents have 3.05 times higher odds of being a zombie than rural (OR = 3.05; CI: 1.13 - 8.57)
+
+Urban residents have 15.02 times higher odds of being a zombie than rural (OR = 15.02; CI: 5.11 - 50.26) 
+
+People with a radio are 92% lower odds of being a zombie than people without a radio (OR = .08: CI: .03 - .21)
+
+(4) Interpret model significance:
+
+Model is significantly better than baseline (chi-squared = 133.09; p<.001)
+
+(5) Interpret model fit:
+
+168 of 200 (84%) were correctly predicted
+
+
+## Step 6: Compute your own probability of becoming a zombie 
+
+Use the logistic regression equation from the model and **your own data** (e.g., your actual age, how much water you really have stored at your home) to predict your probability of becoming a zombie.
+
+It may be easiest to write the equation out on paper first, then use R to do the calculations. 
+
+*WILL VARY BY PERSON DEPENDING ON PERSONAL CHARACTERISTICS, SUBSTITUTE VALUES INTO MODEL TO CHECK*
+
+```{r eval = FALSE}
+# get the model summary
+summary(zombieModel)
+
+# predict your probability
+prob.zombie = 1 / (1 + exp(-(-2.77 + .07*AGE - 2.54*WATERPERSON + 1.11*SUBURBAN + 2.71*URBAN - 2.49*RADIO)))
+
+# print your probability 
+prob.zombie
+```
+
+(6) Interpret your probability:
+
+## Step 7: Make recommendations
+
+(7) What should the CDC do to protect those who are not yet zombies? 
+
+    + (a) What supplies do they need? 
+    
+    **People need a radio and water**
+    
+    + (b) Should they stay where they are or move somewhere else? 
+    
+    **They should move to rural areas if they can safely do so**
+
+(8) Thinking about your predicted probability, what evidence-based things could you do to better protect yourself from becoming a zombie? 
+
+**get a radio and water in my house, become younger** 
+
+
+
+**Final note: While it is unlikely we will have a zombie attack in the near future, the supplies and scenarios in this project are based on emergency preparedness planning. To learn more about emergency preparedness for zombies, earthquakes, forest fires, floods, etc, visit the CDC website: http://www.cdc.gov/phpr/zombies.htm**
+
+
+
+
+
+
+
