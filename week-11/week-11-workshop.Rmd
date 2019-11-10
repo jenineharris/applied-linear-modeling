@@ -1,0 +1,146 @@
+---
+title: 'Week 11 workshop'
+date: 'November 12, 2019'
+---
+
+```{r}
+# load GSS rda file
+load(file = "gss2018.rda")
+```
+
+```{r}
+# assign the original objected called GSS to gss.2018
+gss.2018 <- GSS
+
+# remove the original object GSS
+rm(GSS)
+```
+
+```{r message = FALSE, error=FALSE, warning = FALSE} 
+library(package = "tidyverse")
+
+# select variables
+gss.2018.cleaned <- gss.2018 %>% 
+  select(USETECH, DEGREE, SEX) 
+
+# examine the variables
+summary(object = gss.2018.cleaned)
+```
+
+```{r}
+# recode variables of interest to valid ranges
+gss.2018.cleaned <- gss.2018 %>%
+  select(SEX, DEGREE, USETECH) %>%
+  mutate(USETECH = na_if(x = USETECH, y = -1)) %>%
+  mutate(USETECH = na_if(x = USETECH, y = 999)) %>%
+  mutate(USETECH = na_if(x = USETECH, y = 998)) %>% 
+  mutate(SEX = factor(x = SEX, labels = c("male","female"))) %>%
+  mutate(DEGREE = factor(x = DEGREE, labels = c("< high school",
+                                                "high school", "junior college",
+                                                "college", "grad school")))
+# check recoding
+summary(object = gss.2018.cleaned)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# graph usetech by degree
+gss.2018.cleaned %>%
+ggplot(aes(y = USETECH, x = DEGREE)) + 
+  geom_jitter(aes(color = DEGREE), alpha = .6) +
+  geom_boxplot(aes(fill = DEGREE), alpha = .6) + 
+  scale_fill_brewer(palette = "Spectral") +
+  scale_color_brewer(palette = "Spectral") +
+  theme_minimal() + 
+  labs(x = "Educational attainment", y = "Percent of time spent using technology")
+```
+
+```{r message=FALSE, warning=FALSE}
+# graph usetech by sex
+gss.2018.cleaned %>%
+ggplot(aes(y = USETECH, x = SEX)) + 
+  geom_jitter(aes(color = SEX), alpha = .6) +
+  geom_boxplot(aes(fill = SEX), alpha = .6) + 
+  scale_fill_brewer(palette = "Spectral") +
+  scale_color_brewer(palette = "Spectral") +
+  theme_minimal() + 
+  labs(x = "Sex", y = "Percent of time spent using technology")
+```
+
+```{r message=FALSE, warning=FALSE}
+# graph usetech by degree
+gss.2018.cleaned %>%
+ggplot(aes(y = USETECH, x = DEGREE)) + 
+  geom_jitter(aes(color = SEX), alpha = .4) +
+  geom_boxplot(aes(fill = SEX), alpha = .4) + 
+  scale_fill_manual(values = c("gray70", "#7463AC")) +
+  scale_color_manual(values = c("gray70", "#7463AC")) +
+  theme_minimal() + 
+  labs(x = "Educational attainment", y = "Percent of time spent using technology")
+```
+
+```{r message=FALSE, warning=FALSE}
+# means plots graph 
+gss.2018.cleaned %>%
+  ggplot(aes(y = USETECH, x = DEGREE, color = SEX)) + 
+  stat_summary(fun.y = mean, geom="point", size = 3) +
+  stat_summary(fun.y = mean, geom="line", aes(group = SEX), size = 1) +
+  scale_color_manual(values = c("gray70", "#7463AC")) +
+  theme_minimal() + 
+  labs(x = "Educational attainment", 
+       y = "Percent of time spent using technology",
+       subtitle = "Means plot of technology use by educational attainment and sex") +
+  ylim(0, 100)
+```
+
+```{r}
+# means by degree and sex
+use.stats.2 <- gss.2018.cleaned %>% 
+  group_by(DEGREE, SEX) %>% 
+  drop_na(USETECH) %>%
+  summarize(m.techuse = mean(USETECH),
+            sd.techuse = sd(USETECH))
+use.stats.2
+```
+
+```{r}
+# two-way ANOVA technology use by degree and sex
+techuse.by.deg.sex <- aov(formula = USETECH ~ DEGREE + SEX + DEGREE * SEX, 
+                          data = gss.2018.cleaned)
+summary(techuse.by.deg.sex)
+```
+
+```{r message = FALSE, warning=FALSE}
+# get effect size 
+library(package = "sjstats")
+omega_sq(model = techuse.by.deg.sex)
+```
+
+
+```{r}
+# Tukey's HSD post-hoc test
+TukeyHSD(x = techuse.by.deg.sex)
+```
+
+
+```{r}
+# make a data frame
+tech.deg.sex <- data.frame(techuse.by.deg.sex$residuals)
+
+# plot the residuals
+tech.deg.sex %>%
+ggplot(aes(x = techuse.by.deg.sex.residuals)) + 
+  geom_histogram(fill = "#7463AC", col = "white") + 
+  theme_minimal() + 
+  labs(x = "Residuals", 
+       y = "Number of observations",
+       subtitle = "Distribution of residuals from ANOVA explaining tech use\nbased on educational attainment and sex (GSS, 2018)") 
+
+```
+
+```{r message=FALSE, warning=FALSE}
+# Levene test for ANOVA
+library(package = "car")
+leveneTest(y = USETECH ~ DEGREE*SEX, 
+                data = gss.2018.cleaned)
+```
