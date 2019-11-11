@@ -37,7 +37,7 @@ gss.2018.cleaned <- gss.2018 %>%
   mutate(SEX = factor(x = SEX, labels = c("male","female"))) %>%
   mutate(DEGREE = factor(x = DEGREE, labels = c("< high school",
                                                 "high school", "junior college",
-                                                "college", "grad school")))
+                                                "bachelor", "graduate")))
 # check recoding
 summary(object = gss.2018.cleaned)
 ```
