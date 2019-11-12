@@ -1,0 +1,155 @@
+---
+title: "M&M ANOVA"
+output: html_document
+---
+
+# Trick or Treat: Using ANOVA to help your kids get the most candy
+
+```{r echo = FALSE}
+# enter your data
+type.mm <- c("peanut", "caramel", "milk-chocolate", "peanut", "caramel", "milk-chocolate", "peanut", "caramel", "milk-chocolate", "peanut", "peanut", "milk-chocolate", "peanut", "caramel", "milk-chocolate", "peanut", "caramel", "peanut", "milk-chocolate", "peanut", "milk-chocolate", "caramel", "peanut", "milk-chocolate", "caramel", "milk-chocolate", "peanut", "peanut", "milk-chocolate", "milk-chocolate", "milk-chocolate", "milk-chocolate", "caramel", "milk-chocolate", "milk-chocolate", "milk-chocolate", "peanut", "caramel", "peanut", "milk-chocolate", "milk-chocolate", "milk-chocolate", "peanut", "caramel", "milk-chocolate", "caramel", "peanut", "milk-chocolate", "milk-chocolate")
+
+number.mm <- c(8, 7, 16, 6, 7, 15, 7, 5, 14, 7, 8, 16, 7, 6, 14, 7, 5, 7, 15, 7, 18, 7, 7, 15, 6, 16, 8, 8, 18, 18, 15, 16, 7, 15, 16, 15, 7, 5, 7, 15, 14, 16, 7, 8, 15, 7, 7, 15, 18)
+
+
+# make a data frame
+mm.data <- data.frame(type.mm, number.mm)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# boxplot of m&ms by type
+library(package = "tidyverse")
+mm.data %>%
+  ggplot(aes(x = type.mm, y = number.mm, fill = type.mm)) +
+  geom_jitter() +
+  geom_boxplot() +
+  scale_fill_brewer(palette = "Dark2", guide = FALSE) +
+  labs(x = "M & M type", y = "Number of pieces per package",
+       subtitle = "") +
+  theme_bw()
+
+# descriptive statistics
+library(package = "tableone")
+mm.table <- CreateTableOne(data = mm.data,
+                           strata = "type.mm",
+                           vars = c("number.mm"))
+print(mm.table)
+
+
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# density plot by groups to check normality
+mm.data %>%
+  ggplot(aes(x = number.mm)) + 
+  geom_density(aes(fill = type.mm)) + 
+  facet_wrap(~ type.mm) + 
+  scale_fill_brewer(palette = "Dark2", guide = FALSE) +
+  theme_bw()
+```
+
+```{r message = FALSE, warning = FALSE, include = FALSE}
+# use Levene in car package to check homogeneity of variances
+library(package = "car")
+leveneTest(y = number.mm ~ type.mm, data = mm.data)
+```
+
+
+
+```{r message=FALSE, warning=FALSE, include = FALSE}
+# ANOVA of mean mms by mm type
+number.by.type <- oneway.test(formula = number.mm ~ type.mm,
+                              data = mm.data,
+                              var.equal = TRUE)
+number.by.type
+```
+
+
+```{r include = FALSE, message = FALSE, warning = FALSE}
+# Bonferroni post-hoc test
+bonf.mms <- pairwise.t.test(x = mm.data$number.mm,
+                            g = mm.data$type.mm,
+                            p.adj = "bonf")
+bonf.mms
+```
+
+
+
+```{r echo = FALSE, results = FALSE}
+# figure out the order of categories for planned comparisons
+levels(x = mm.data$type.mm)
+```
+
+```{r echo = FALSE, results = FALSE}
+# write a contrast to compare plain to combined peanut & caramel
+contrast1 <- c(-1, 2, -1)
+```
+
+```{r echo = FALSE, results = FALSE}
+# link the contrast to the candy type variable
+contrasts(x = mm.data$type.mm) <- contrast1
+```
+
+```{r echo = FALSE, results = FALSE}
+# re-run the model using aov() 
+num.by.type.aov <- aov(formula = number.mm ~ type.mm, 
+            data = mm.data)
+
+# apply the contrasts to the anova object num.by.type.aov
+# give the contrast a good descriptive name of "Plain vs. others"
+plain.vs.other.contr <- summary.aov(object = num.by.type.aov,
+                                 split = list(type.mm = list("Plain vs. others" = 1)))
+plain.vs.other.contr
+```
+
+```{r echo = FALSE, results = FALSE}
+# examine the means for the combined groups
+# recode and compute the means for high school and college groups
+# the labels should be in the order of the categories as you found
+# with the levels code above
+mm.data %>%
+  mutate(type.mm = factor(x = type.mm, labels = c("peanut & caramel",
+                                                "milk-chocolate", "peanut & caramel"))) %>% 
+  group_by(type.mm) %>%
+  summarize(m.num.candies = mean(x = number.mm),
+            sd.num.candies = sd(x = number.mm))
+```
+
+## Study results
+
+We counted the number of M&Ms in 49 packages of fun-size M&Ms for Halloween. There were a mean of 6.36 (sd = 1.03) in the caramel M&Ms packages, 7.19 (sd = .54) in the peanut M&Ms packages, and 15.68 (sd = 1.29) in the milk-chocolate M&Ms packages (Table 1; Figure 1)
+
+Table 1. Mean number of M&Ms by type in 49 packages of fun-size M&Ms.
+
+```{r echo = FALSE}
+# descriptive statistics
+library(package = "tableone")
+mm.table <- CreateTableOne(data = mm.data,
+                           strata = "type.mm",
+                           vars = c("number.mm"))
+print(mm.table)
+
+# boxplot of m&ms by type
+library(package = "tidyverse")
+mm.data %>%
+  ggplot(aes(x = type.mm, y = number.mm, fill = type.mm)) +
+  geom_boxplot() +
+  geom_jitter() +
+  scale_fill_brewer(palette = "Dark2", guide = FALSE) +
+  labs(x = "M & M type", y = "Number of pieces per package",
+       subtitle = "Figure 1. M & Ms per package for 49 packages of fun-sized M & Ms (2019)") +
+  theme_bw()
+```
+
+A one-way ANOVA comparing the mean number of M&Ms in fun-size packages for Halloween was statistically significant (F(2,46) = 438.96; p < .05) indicating that the mean number of candies per package is different across M&M types. Bonferroni post-hoc tests found that the mean number of M&Ms in milk-chocolate type package was statistically significantly (p < .05) different from the mean number in the peanut and caramel types (see Table 1 for means). A planned comparison grouping caramel and peanut types (m = 6.85; sd = .86) and comparing this grouped mean to the mean number in milk-chocolate also found a statistically significant (p < .05) difference in means. The data did not meet the normality assumption but did meet the equal variances assumption, so these results should not be generalized outside the sample. It appears that, to get the most candy trick-or-treating, kids should choose plain M&Ms when given a choice, but to be sure, a different analysis strategy might be useful.
+
+
+
+
+
+
+
+
+
