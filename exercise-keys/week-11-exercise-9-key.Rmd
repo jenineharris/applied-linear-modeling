@@ -1,0 +1,160 @@
+---
+title: 'Exercise 9: Two-way ANOVA'
+author: "Key"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, message = FALSE)
+```
+
+```{r echo = FALSE}
+# load GSS rda file
+load(file = "gss2018.rda")
+gss.2018 <- GSS
+rm(GSS)
+```
+
+```{r results = FALSE} 
+library(package = "tidyverse")
+
+# select variables
+gss.2018.cleaned <- gss.2018 %>% 
+  select(USETECH, HAPPY, SEX) 
+
+# examine the variables
+summary(object = gss.2018.cleaned)
+```
+
+```{r results = FALSE}
+#recode variables
+gss.2018.recode <- gss.2018.cleaned %>%
+  mutate(USETECH = na_if(x = USETECH, y = -1)) %>%
+  mutate(USETECH = na_if(x = USETECH, y = 999)) %>%
+  mutate(USETECH = na_if(x = USETECH, y = 998)) %>%
+  mutate(SEX = factor(x = SEX, labels = c("Male",
+                                          "Female"))) %>%
+  mutate(HAPPY = na_if(x = HAPPY, y = 8)) %>%
+  mutate(HAPPY = factor(x = HAPPY, labels = c("Very happy", 
+                                              "Pretty happy", 
+                                              "Not too happy"))) %>%
+  drop_na(USETECH) %>%
+  drop_na(HAPPY)
+
+#check recoding
+summary(object = gss.2018.recode)
+```
+
+Participants who reported being "not too happy" use technology a lower percentage of time at work than participants who reported being "very happy" or "pretty happy." Percent of time spent using technology at work did not appear different between pretty happy and very happy people.
+
+```{r}
+#graph usetech by happiness
+gss.2018.recode %>%
+ggplot(aes(y = USETECH, x = HAPPY)) + 
+  geom_jitter(aes(color = HAPPY), alpha = .6) +
+  geom_boxplot(aes(fill = HAPPY), alpha = .6) +
+  scale_fill_brewer(palette = "Dark2", guide = FALSE) +
+  scale_color_brewer(palette = "Dark2", guide = FALSE) +
+  theme_minimal() + 
+  labs(x = "General happiness", 
+       y = "Percent of work time spent using technology",
+       subtitle = "Happiness by tech use time at work")
+```
+
+Females generally spent a greater proportion of their work time using technology relative to males in the participant sample.
+
+```{r}
+#graph usetech by sex
+gss.2018.recode %>%
+ggplot(aes(y = USETECH, x = SEX)) + 
+  geom_jitter(aes(color = SEX), alpha = .6) +
+  geom_boxplot(aes(fill = SEX), alpha = .6) + 
+  scale_fill_brewer(palette = "Dark2", guide = FALSE) +
+  scale_color_brewer(palette = "Dark2", guide = FALSE) +
+  theme_minimal() + 
+  labs(x = "Sex", 
+       y = "Percent of work time spent using technology")
+```
+
+Females reported higher work tech use than males across all three happiness categories.
+
+```{r}
+#graph usetech by happiness & sex
+gss.2018.recode %>%
+ggplot(aes(y = USETECH, x = HAPPY)) + 
+  geom_jitter(aes(color = SEX), alpha = .6) +
+  geom_boxplot(aes(fill = SEX), alpha = .6) + 
+  scale_fill_brewer(palette = "Dark2") +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal() + 
+  labs(x = "General happiness", 
+       y = "Percent of work time spent using technology")
+```
+
+These trends are confirmed by the means plot and a table of descriptive statistics below, which do indeed show higher use of technology by females and a dip in technology use by males with lower self-rated happiness.
+
+```{r}
+# means plot graph
+gss.2018.recode %>%
+  ggplot(aes(y = USETECH, x = HAPPY, color = SEX)) + 
+  stat_summary(fun.y = mean, geom="point", size = 3) +
+  stat_summary(fun.y = mean, geom="line", aes(group = SEX), size = 1) +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal() + 
+  labs(x = "General happiness", 
+       y = "Percent of work time spent using technology",
+       subtitle = "Means plot of work tech use by happiness & sex") +
+  ylim(0, 100)
+```
+
+```{r}
+# means by happiness and sex
+use.stats.2 <- gss.2018.recode %>% 
+  group_by(HAPPY, SEX) %>% 
+  summarize(m.techuse = mean(USETECH),
+            sd.techuse = sd(USETECH))
+use.stats.2
+```
+
+A two-way ANOVA comparing mean tech use time at work by sex, happiness, and the interaction of the two found a significant main effect of sex on tech use time [F(1, 1402) = 17.45; p < 0.001]. However, neither happiness nor the interaction of happiness and sex were significant.
+
+```{r}
+# two-way ANOVA technology use by happiness and sex
+techuse.by.happy.sex <- aov(formula = USETECH ~ HAPPY + SEX + HAPPY * SEX, 
+                          data = gss.2018.recode)
+summary(techuse.by.happy.sex)
+```
+
+The effect size of the sex main effect was small (\omega^2 = 0.012).
+
+```{r}
+# get effect size
+library(package = "sjstats")
+omega_sq(model = techuse.by.happy.sex)
+```
+
+Given the significant main effect was a difference in mean work technology use between males and females, there is no need for post-hoc tests since the difference in means is clear. 
+
+The study design description on the GSS website confirms that data collected meet the assumption of independent observation and that the outcome is a continuous variable. The model also meets the homogeneity of variances assumption with a non-significant Levene's test. However, the residuals are not normally distributed, so the normality assumption has not been met. The ANOVA does not meet all the assumptions, so the results are not generalizable.
+
+```{r}
+# Levene test for ANOVA
+library(package = "car")
+leveneTest(y = USETECH ~ HAPPY*SEX, 
+                data = gss.2018.recode)
+```
+
+```{r}
+# make a data frame to test normality
+tech.happy.sex <- data.frame(techuse.by.happy.sex$residuals)
+
+# plot the residuals
+tech.happy.sex %>%
+ggplot(aes(x = techuse.by.happy.sex.residuals)) + 
+  geom_histogram(fill = "#7463AC", col = "white") + 
+  theme_minimal() + 
+  labs(x = "Residuals", 
+       y = "Number of observations",
+       subtitle = "Distribution of residuals from ANOVA explaining work tech use\nbased on happiness and sex (GSS, 2018)")
+```
+
